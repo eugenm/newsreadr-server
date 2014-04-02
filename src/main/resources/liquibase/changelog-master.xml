@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<databaseChangeLog xmlns="http://www.liquibase.org/xml/ns/dbchangelog" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.1.xsd">
+    
+    <!-- 
+        To help make scripts database-independent, the following “generic” data types will be converted to the correct database implementation: 
+            * BOOLEAN 
+            * CURRENCY 
+            * UUID 
+            * CLOB 
+            * BLOB 
+            * DATE 
+            * DATETIME 
+            * TIME 
+            * BIGINT
+
+        Also, specifying a java.sql.Types type will be converted to the correct type as well. If needed, precision can be included. 
+        Here are some examples: * java.sql.Types.TIMESTAMP * java.sql.Types.VARCHAR(255)
+    -->
+    
+    <include file="liquibase/changelog-v1.0.0.xml"/>
+    
+</databaseChangeLog>
