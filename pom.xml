@@ -13,6 +13,10 @@
         <api.version>1.0.0-SNAPSHOT</api.version>
     </properties>
 
+    <scm>
+        <developerConnection>scm:git:https://github.com/PatrickGotthard/newsreadr-server.git</developerConnection>
+    </scm>
+
     <distributionManagement>
         <repository>
             <id>patrick-gotthard-releases</id>
