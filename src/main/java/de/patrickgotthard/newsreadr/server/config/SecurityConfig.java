@@ -28,6 +28,9 @@ import de.patrickgotthard.newsreadr.shared.response.data.Role;
 @EnableWebSecurity
 public class SecurityConfig extends WebSecurityConfigurerAdapter {
 
+    private static final String INITIAL_ADMIN_USERNAME = "admin";
+    private static final String INITIAL_ADMIN_PASSWORD = "password";
+
     @Autowired
     private NewsreadrUserDetailsService userDetailsService;
 
@@ -42,8 +45,8 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
         if (userRepository.count() == 0) {
             final PasswordEncoder passwordEncoder = passwordEncoder();
             final User user = new User();
-            user.setUsername("admin");
-            user.setPassword(passwordEncoder.encode("password"));
+            user.setUsername(INITIAL_ADMIN_USERNAME);
+            user.setPassword(passwordEncoder.encode(INITIAL_ADMIN_PASSWORD));
             user.setRole(Role.ADMIN);
             userRepository.save(user);
         }
