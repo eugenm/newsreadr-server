@@ -12,11 +12,13 @@ import org.springframework.jdbc.datasource.embedded.EmbeddedDatabaseType;
 import com.github.springtestdbunit.bean.DatabaseConfigBean;
 import com.github.springtestdbunit.bean.DatabaseDataSourceConnectionFactoryBean;
 
-import de.patrickgotthard.newsreadr.server.config.ApplicationConfig;
 import de.patrickgotthard.newsreadr.server.config.PersistenceConfig;
+import de.patrickgotthard.newsreadr.server.config.SchedulerConfig;
+import de.patrickgotthard.newsreadr.server.config.SecurityConfig;
+import de.patrickgotthard.newsreadr.server.config.ServiceConfig;
 
 @Configuration
-@Import(ApplicationConfig.class)
+@Import({ PersistenceConfig.class, ServiceConfig.class, SchedulerConfig.class, SecurityConfig.class })
 public class TestConfig {
 
     /** Overrides the dataSource configured in {@link PersistenceConfig}. */
