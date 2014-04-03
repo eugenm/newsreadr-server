@@ -6,7 +6,7 @@ newsreadr is a web based [RSS](http://en.wikipedia.org/wiki/RSS) and [Atom](http
 
 ### Prerequisites
 * Install a [Java Runtime Environment](http://www.oracle.com/technetwork/java/javase/downloads/index.html) (at least version 7)
-* Install an application server like [Tomcat](http://tomcat.apache.org) (tested with Tomcat 7, the application server must support at least the Servlet API v3)
+* Install an application server like [Tomcat](http://tomcat.apache.org) (tested with Tomcat 7, the server must support at least Servlet API v3)
 
 ### Instructions
 
