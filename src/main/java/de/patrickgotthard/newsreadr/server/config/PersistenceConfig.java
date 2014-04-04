@@ -30,7 +30,7 @@ public class PersistenceConfig {
     @Autowired
     private Environment env;
 
-    @Bean
+    @Bean(destroyMethod = "shutdown")
     public DataSource dataSource() {
 
         final String url = env.getProperty("mysql.url");
