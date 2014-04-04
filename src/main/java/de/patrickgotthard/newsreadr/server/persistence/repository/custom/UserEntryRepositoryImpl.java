@@ -28,9 +28,8 @@ public class UserEntryRepositoryImpl implements CustomUserEntryRepository {
     private EntityManager entityManager;
 
     @Override
-    public long getLatestEntryId(final Predicate predicate) {
+    public Long getLatestEntryId(final Predicate predicate) {
         final QUserEntry qUserEntry = QUserEntry.userEntry;
-        // TODO only call when there are entries -> NPE
         return new JPAQuery(entityManager).from(qUserEntry).where(predicate).uniqueResult(qUserEntry.id.max());
     }
 
@@ -46,8 +45,8 @@ public class UserEntryRepositoryImpl implements CustomUserEntryRepository {
         .from(qUserEntry)
         .join(qUserEntry.subscription, qSubscription)
         .join(qUserEntry.entry, qEntry)
-        .orderBy(qEntry.publishDate.desc())
         .where(predicate)
+        .orderBy(qEntry.publishDate.desc(), qEntry.title.asc())
         .limit(pageable.getPageSize())
         .offset(pageable.getOffset())
         .list(qUserEntry.id, qSubscription.title, qEntry.url, qEntry.title, qEntry.publishDate, qUserEntry.read, qUserEntry.bookmarked);

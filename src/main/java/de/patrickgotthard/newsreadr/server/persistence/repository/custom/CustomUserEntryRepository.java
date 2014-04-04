@@ -11,7 +11,7 @@ import de.patrickgotthard.newsreadr.shared.response.data.EntrySummary;
 
 public interface CustomUserEntryRepository {
 
-    long getLatestEntryId(Predicate predicate);
+    Long getLatestEntryId(Predicate predicate);
 
     List<EntrySummary> findEntries(Predicate predicate, Pageable pageable);
 

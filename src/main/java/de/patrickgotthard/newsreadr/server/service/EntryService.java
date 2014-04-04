@@ -14,6 +14,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.mysema.query.BooleanBuilder;
+import com.mysema.query.types.expr.BooleanExpression;
 
 import de.patrickgotthard.newsreadr.server.persistence.entity.Subscription;
 import de.patrickgotthard.newsreadr.server.persistence.entity.UserEntry;
@@ -54,10 +55,11 @@ public class EntryService {
 
         LOG.debug("Getting entries: {}", request);
 
-        final BooleanBuilder query = new BooleanBuilder();
-
         final long currentUserId = securityService.getCurrentUserId();
-        query.and(UserEntryExpression.belongsToUser(currentUserId));
+        final BooleanExpression entryBelongsToUser = UserEntryExpression.belongsToUser(currentUserId);
+
+        final BooleanBuilder query = new BooleanBuilder();
+        query.and(entryBelongsToUser);
 
         final String feed = request.getFeed();
         if (FEED_ALL.equals(feed)) {
@@ -87,7 +89,8 @@ public class EntryService {
         final int page = request.getPage();
         final PageRequest pageRequest = new PageRequest(page, 50);
 
-        final long newLatestEntry = userEntryRepository.getLatestEntryId(UserEntryExpression.belongsToUser(currentUserId));
+        final Long newLatestEntry = userEntryRepository.getLatestEntryId(entryBelongsToUser);
+
         final List<EntrySummary> entries = userEntryRepository.findEntries(query, pageRequest);
 
         return new GetEntriesResponse(newLatestEntry, entries);
