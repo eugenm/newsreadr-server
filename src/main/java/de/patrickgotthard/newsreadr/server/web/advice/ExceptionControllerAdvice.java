@@ -15,7 +15,7 @@ import de.patrickgotthard.newsreadr.shared.response.Response;
 public class ExceptionControllerAdvice {
 
     private static final Logger LOG = LoggerFactory.getLogger(ExceptionControllerAdvice.class);
-    private static String UNKNOWN_ERROR_MESSAGE = "An unknown error occured";
+    private static final String UNKNOWN_ERROR_MESSAGE = "An unknown error occured";
 
     @ExceptionHandler(Exception.class)
     @ResponseBody
