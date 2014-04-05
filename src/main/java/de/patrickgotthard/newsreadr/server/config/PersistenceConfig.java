@@ -42,6 +42,8 @@ public class PersistenceConfig {
         config.addDataSourceProperty("url", url);
         config.addDataSourceProperty("user", username);
         config.addDataSourceProperty("password", password);
+        config.setConnectionTestQuery("SELECT 1");
+
         return new HikariDataSource(config);
 
     }
