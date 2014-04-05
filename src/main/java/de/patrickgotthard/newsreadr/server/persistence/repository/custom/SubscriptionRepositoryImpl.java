@@ -52,6 +52,7 @@ public class SubscriptionRepositoryImpl implements CustomSubscriptionRepository 
         .from(qSubscription)
         .join(qSubscription.feed, qFeed).fetch()
         .where(predicate)
+        .orderBy(qSubscription.title.asc())
         .list(qSubscription);
         // @formatter:on
 

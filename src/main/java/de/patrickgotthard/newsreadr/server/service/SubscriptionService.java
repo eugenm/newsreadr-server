@@ -208,9 +208,6 @@ public class SubscriptionService {
             subscriptionNodes.add(convert(currentUserId, null, subscription));
         }
 
-        // sort subscriptions
-        sortNodes(subscriptionNodes);
-
         // assemble and return result
         final List<Node> nodes = new ArrayList<>();
         nodes.add(allEntriesNode);
