@@ -1,5 +1,7 @@
 package de.patrickgotthard.newsreadr.server.config;
 
+import java.util.Properties;
+
 import javax.persistence.EntityManagerFactory;
 import javax.sql.DataSource;
 
@@ -61,13 +63,15 @@ public class PersistenceConfig {
     public EntityManagerFactory entityManagerFactory() {
 
         final HibernateJpaVendorAdapter vendorAdapter = new HibernateJpaVendorAdapter();
-        vendorAdapter.setGenerateDdl(false);
-        vendorAdapter.setShowSql(false);
+
+        final Properties jpaProperties = new Properties();
+        jpaProperties.setProperty("hibernate.format_sql", "true");
 
         final LocalContainerEntityManagerFactoryBean factory = new LocalContainerEntityManagerFactoryBean();
-        factory.setJpaVendorAdapter(vendorAdapter);
-        factory.setPackagesToScan("de.patrickgotthard.newsreadr.server.persistence.entity");
         factory.setDataSource(dataSource());
+        factory.setPackagesToScan("de.patrickgotthard.newsreadr.server.persistence.entity");
+        factory.setJpaVendorAdapter(vendorAdapter);
+        factory.setJpaProperties(jpaProperties);
         factory.afterPropertiesSet();
         return factory.getObject();
 
