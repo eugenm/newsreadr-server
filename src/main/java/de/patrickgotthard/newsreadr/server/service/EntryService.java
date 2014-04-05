@@ -158,7 +158,9 @@ public class EntryService {
         }
 
         final List<UserEntry> entries = userEntryRepository.findAll(query);
-        userEntryRepository.markEntriesAsRead(entries);
+        if (!entries.isEmpty()) {
+            userEntryRepository.markEntriesAsRead(entries);
+        }
 
         return Response.success();
 
