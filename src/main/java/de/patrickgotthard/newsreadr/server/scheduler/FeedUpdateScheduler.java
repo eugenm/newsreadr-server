@@ -93,7 +93,7 @@ class FeedUpdateScheduler {
             }
 
         } catch (final Exception e) {
-            LOG.debug("An error occured while updating feed " + feedId, e);
+            LOG.info("An error occured while updating feed " + feedId, e);
         }
 
         LOG.debug("Finished updating feed {}", feedId);
