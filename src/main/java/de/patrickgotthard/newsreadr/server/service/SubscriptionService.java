@@ -4,8 +4,6 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.StringWriter;
 import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Comparator;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
@@ -23,6 +21,7 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
 import com.mysema.query.BooleanBuilder;
+import com.mysema.query.types.OrderSpecifier;
 import com.mysema.query.types.expr.BooleanExpression;
 
 import de.patrickgotthard.newsreadr.server.persistence.entity.Entry;
@@ -175,7 +174,10 @@ public class SubscriptionService {
 
         // folder nodes
         final BooleanExpression folderBelongsToUser = FolderExpression.belongsToUser(currentUserId);
-        final List<Folder> subscriptionsWithFolder = subscriptionRepository.getSubscriptionsWithFolder(folderBelongsToUser);
+        final OrderSpecifier<String> orderFolderByTitleAsc = FolderExpression.orderByTitleAsc();
+        final List<Folder> subscriptionsWithFolder = folderRepository.findAll(folderBelongsToUser, orderFolderByTitleAsc);
+
+        final OrderSpecifier<String> orderSubscriptionByTitleAsc = SubscriptionExpression.orderByTitleAsc();
 
         final List<FolderNode> folderNodes = new ArrayList<FolderNode>();
         for (final Folder folder : subscriptionsWithFolder) {
@@ -184,24 +186,26 @@ public class SubscriptionService {
             long unread = 0;
 
             // subscription nodes in folder
+            final BooleanExpression belongsToFolder = SubscriptionExpression.belongsToFolder(folderId);
+            final List<Subscription> subscriptions = subscriptionRepository.findAll(belongsToFolder, orderSubscriptionByTitleAsc);
+
             final List<SubscriptionNode> subscriptionNodes = new ArrayList<>();
-            for (final Subscription subscription : folder.getSubscriptions()) {
+            for (final Subscription subscription : subscriptions) {
                 final SubscriptionNode subscriptionNode = convert(currentUserId, folderId, subscription);
                 unread += subscriptionNode.getUnread();
                 subscriptionNodes.add(subscriptionNode);
             }
-            sortNodes(subscriptionNodes);
 
             // add folder node
             folderNodes.add(new FolderNode(folderId, folder.getTitle(), unread, subscriptionNodes));
 
         }
-        sortNodes(folderNodes);
 
         // subscription nodes (without folder)
         final BooleanExpression subscriptionBelongsToUser = SubscriptionExpression.belongsToUser(currentUserId);
         final BooleanExpression hasNoFolder = SubscriptionExpression.hasNoFolder();
-        final List<Subscription> subscriptionsWithoutFolder = subscriptionRepository.getSubscriptionsWithoutFolder(subscriptionBelongsToUser.and(hasNoFolder));
+        final List<Subscription> subscriptionsWithoutFolder = subscriptionRepository.findAll(subscriptionBelongsToUser.and(hasNoFolder),
+                orderSubscriptionByTitleAsc);
 
         final List<SubscriptionNode> subscriptionNodes = new ArrayList<>();
         for (final Subscription subscription : subscriptionsWithoutFolder) {
@@ -234,15 +238,6 @@ public class SubscriptionService {
         final long unread = userEntryRepository.countUnread(query);
         return new SubscriptionNode(subscriptionId, folderId, feedUrl, subscriptionTitle, unread);
 
-    }
-
-    private void sortNodes(final List<? extends Node> nodes) {
-        Collections.sort(nodes, new Comparator<Node>() {
-            @Override
-            public int compare(final Node o1, final Node o2) {
-                return StringUtil.compare(o1.getTitle(), o2.getTitle());
-            }
-        });
     }
 
     @Transactional

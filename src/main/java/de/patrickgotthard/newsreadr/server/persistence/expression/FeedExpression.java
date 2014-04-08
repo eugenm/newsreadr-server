@@ -6,11 +6,13 @@ import de.patrickgotthard.newsreadr.server.persistence.entity.QFeed;
 
 public final class FeedExpression {
 
+    private static final QFeed FEED = QFeed.feed;
+
     private FeedExpression() {
     }
 
     public static BooleanExpression isUnused() {
-        return QFeed.feed.subscriptions.isEmpty();
+        return FEED.subscriptions.isEmpty();
     }
 
 }
