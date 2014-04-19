@@ -41,7 +41,7 @@ public class FolderService {
 
         final boolean folderAlreadyExists = folderRepository.countByUserAndTitle(currentUser, title) > 0;
         if (folderAlreadyExists) {
-            throw new ServiceException("Folder '%s' already exists", title);
+            throw new ServiceException("Folder '{}' already exists", title);
         }
 
         final Folder folder = new Folder.Builder().setUser(currentUser).setTitle(title).build();
@@ -73,7 +73,7 @@ public class FolderService {
 
         final boolean folderAlreadyExists = folderRepository.countByUserAndTitle(currentUser, newTitle) > 0;
         if (folderAlreadyExists) {
-            throw new ServiceException("Folder '%s' already exists", newTitle);
+            throw new ServiceException("Folder '{}' already exists", newTitle);
         }
 
         folder.setTitle(newTitle);

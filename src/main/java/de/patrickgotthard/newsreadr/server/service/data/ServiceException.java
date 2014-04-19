@@ -9,7 +9,7 @@ public class ServiceException extends RuntimeException {
     }
 
     public ServiceException(final String format, final Object... params) {
-        super(String.format(format, params));
+        super(String.format(format.replace("{}", "%s"), params));
     }
 
 }

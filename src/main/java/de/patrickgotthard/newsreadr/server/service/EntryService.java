@@ -154,7 +154,7 @@ public class EntryService {
             final long folderId = extractId(FOLDER_REGEX, feed);
             query.and(UserEntryExpression.belongsToFolder(folderId));
         } else {
-            throw new ServiceException("Unknown feed: %s", feed);
+            throw new ServiceException("Unknown feed: {}", feed);
         }
 
         final List<UserEntry> entries = userEntryRepository.findAll(query);
