@@ -1,6 +1,7 @@
 <included>
 
     <appender name="FILE" class="ch.qos.logback.core.rolling.RollingFileAppender">
+        <file>newsreadr.log</file>
         <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
             <fileNamePattern>${user.home}/.newsreadr/logs/newsreadr.%d{yyyy-MM-dd}.log</fileNamePattern>
             <maxHistory>30</maxHistory>
@@ -10,10 +11,15 @@
         </encoder>
     </appender>
 
-    <logger name="de.patrickgotthard" level="warn" />
+    <!-- uncomment if you want to help me finding bugs -->
+    <!-- <appender name="SENTRY" class="net.kencochrane.raven.logback.SentryAppender"> -->
+    <!-- <dsn>http://a1c8f0c411944507b6afe713c8a30fbd:cd72b6ee6e0349f4ac74d7fa1d712492@sentry.patrick-gotthard.de/2</dsn> -->
+    <!-- </appender> -->
 
     <root level="warn">
         <appender-ref ref="FILE" />
+        <!-- uncomment if you want to help me finding bugs -->
+        <!-- <appender-ref ref="SENTRY" /> -->
     </root>
 
 </included>
