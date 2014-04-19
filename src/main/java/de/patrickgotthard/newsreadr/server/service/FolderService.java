@@ -41,7 +41,7 @@ public class FolderService {
 
         final boolean folderAlreadyExists = folderRepository.countByUserAndTitle(currentUser, title) > 0;
         if (folderAlreadyExists) {
-            throw new ServiceException("Folder '{}' already exists", title);
+            throw ServiceException.withMessage("Folder '{}' already exists", title);
         }
 
         final Folder folder = new Folder.Builder().setUser(currentUser).setTitle(title).build();
@@ -61,11 +61,11 @@ public class FolderService {
         final Folder folder = folderRepository.findOne(folderId);
 
         if (folder == null) {
-            throw new ServiceException("Folder could not be found");
+            throw ServiceException.withMessage("Folder could not be found");
         }
 
         if (securityService.notBelongsToUser(folder)) {
-            throw new ServiceException("The requested folder does not belong to the current user");
+            throw ServiceException.withMessage("The requested folder does not belong to the current user");
         }
 
         final User currentUser = securityService.getCurrentUser();
@@ -73,7 +73,7 @@ public class FolderService {
 
         final boolean folderAlreadyExists = folderRepository.countByUserAndTitle(currentUser, newTitle) > 0;
         if (folderAlreadyExists) {
-            throw new ServiceException("Folder '{}' already exists", newTitle);
+            throw ServiceException.withMessage("Folder '{}' already exists", newTitle);
         }
 
         folder.setTitle(newTitle);
@@ -93,11 +93,11 @@ public class FolderService {
         final Folder folder = folderRepository.findOne(folderId);
 
         if (folder == null) {
-            throw new ServiceException("Folder could not be found");
+            throw ServiceException.withMessage("Folder could not be found");
         }
 
         if (securityService.notBelongsToUser(folder)) {
-            throw new ServiceException("The requested folder does not belong to the current user");
+            throw ServiceException.withMessage("The requested folder does not belong to the current user");
         }
 
         folderRepository.delete(folder);

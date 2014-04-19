@@ -95,11 +95,11 @@ public class SubscriptionService {
             folder = folderRepository.findOne(folderId);
 
             if (folder == null) {
-                throw new ServiceException("Folder does not exist");
+                throw ServiceException.withMessage("Folder does not exist");
             }
 
             if (securityService.notBelongsToUser(folder)) {
-                throw new ServiceException("The selected folder does not belong to the user");
+                throw ServiceException.withMessage("The selected folder does not belong to the user");
             }
 
         }
@@ -146,7 +146,7 @@ public class SubscriptionService {
 
         } else {
             LOG.debug("User already subscribes the feed {}", request);
-            throw new ServiceException("You are already subscribing the feed");
+            throw ServiceException.withMessage("You are already subscribing the feed");
         }
 
     }
@@ -249,11 +249,11 @@ public class SubscriptionService {
         final Subscription subscription = subscriptionRepository.findOne(subscriptionId);
 
         if (subscription == null) {
-            throw new ServiceException("The subscription does not exist");
+            throw ServiceException.withMessage("The subscription does not exist");
         }
 
         if (securityService.notBelongsToUser(subscription)) {
-            throw new ServiceException("The subscription does not belong to the user");
+            throw ServiceException.withMessage("The subscription does not belong to the user");
         }
 
         final Long folderId = request.getFolderId();
@@ -264,11 +264,11 @@ public class SubscriptionService {
             final Folder folder = folderRepository.findOne(folderId);
 
             if (folder == null) {
-                throw new ServiceException("The folder does not exist");
+                throw ServiceException.withMessage("The folder does not exist");
             }
 
             if (securityService.notBelongsToUser(folder)) {
-                throw new ServiceException("The folder does not belong to the user");
+                throw ServiceException.withMessage("The folder does not belong to the user");
             }
 
             subscription.setFolder(folder);
@@ -296,11 +296,11 @@ public class SubscriptionService {
         final Subscription subscription = subscriptionRepository.findOne(subscriptionId);
 
         if (subscription == null) {
-            throw new ServiceException("The subscription does not exist");
+            throw ServiceException.withMessage("The subscription does not exist");
         }
 
         if (securityService.notBelongsToUser(subscription)) {
-            throw new ServiceException("The subscription does not belong to the user");
+            throw ServiceException.withMessage("The subscription does not belong to the user");
         }
 
         subscriptionRepository.delete(subscription);
@@ -367,7 +367,7 @@ public class SubscriptionService {
 
         } catch (IOException | JAXBException e) {
             LOG.debug("An error occured while importing subscriptions: " + opmlFile, e);
-            throw new ServiceException("An error occured while importing subscriptions");
+            throw ServiceException.withCauseAndMessage(e, "An error occured while importing subscriptions");
         }
 
     }

@@ -34,17 +34,17 @@ public class FeedService {
             final SyndFeed syndFeed = input.build(reader);
             return convertFeed(syndFeed, feedUrl);
         } catch (final IOException e) {
-            throw new ServiceException("Unable to download feed: {}", feedUrl);
+            throw ServiceException.withCauseAndMessage(e, "Unable to download feed: {}", feedUrl);
         } catch (final IllegalArgumentException e) {
-            throw new ServiceException("Unsupported feed type: {}", feedUrl);
+            throw ServiceException.withCauseAndMessage(e, "Unsupported feed type: {}", feedUrl);
         } catch (final FeedException e) {
-            throw new ServiceException("An error occured while parsing the feed: {}", feedUrl);
+            throw ServiceException.withCauseAndMessage(e, "An error occured while parsing the feed: {}", feedUrl);
         }
     }
 
     /**
      * Converts a {@link SyndFeed} into a {@link Feed} object.
-     *
+     * 
      * @param syndFeed The {@link SyndFeed} to convert
      * @param feedUrl URL of the feed
      * @return The converted feed object
@@ -66,7 +66,7 @@ public class FeedService {
 
     /**
      * Extract the title of the feed.
-     *
+     * 
      * @param syndFeed The {@link SyndFeed} to extract the title from
      * @return The title of the {@link SyndFeed} when existing. Otherwise
      *         returns the URL of the feed
@@ -82,7 +82,7 @@ public class FeedService {
     /**
      * Converts a Collection of {@link SyndEntry} into the corresponding
      * {@link Entry} objects.
-     *
+     * 
      * @param syndEntries Collection of {@link SyndEntry} to convert
      * @return The converted entries
      */
@@ -97,7 +97,7 @@ public class FeedService {
 
     /**
      * Converts a {@link SyndEntry} into the corresponding {@link Entry} object.
-     *
+     * 
      * @param syndEntry The {@link SyndEntry} to convert
      * @return The converted entry
      */
@@ -121,7 +121,7 @@ public class FeedService {
 
     /**
      * Extracts the publish date from a {@link SyndEntry}.
-     *
+     * 
      * @param syndEntry The {@link SyndEntry} to extract the publish date from
      * @return The publish date of the {@link SyndEntry} if existing. Otherwise
      *         returns the date of the last update.
@@ -136,7 +136,7 @@ public class FeedService {
 
     /**
      * Extracts the content of a {@link SyndEntry}.
-     *
+     * 
      * @param syndEntry {@link SyndEntry} to extract the content from
      * @return Content of the {@link SyndEntry}
      */

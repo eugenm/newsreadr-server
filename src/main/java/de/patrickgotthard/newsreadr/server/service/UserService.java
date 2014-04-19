@@ -49,7 +49,7 @@ public class UserService {
 
         if (userAlreadyExists) {
 
-            throw new ServiceException("User already exists");
+            throw ServiceException.withMessage("User '{}' already exists", username);
 
         } else {
 
@@ -91,12 +91,12 @@ public class UserService {
 
         // normal users can only update their own account
         if (securityService.isCurrentUserNoAdmin() && !changingOwnAccount) {
-            throw new ServiceException("You are not allowed to edit accounts of other users");
+            throw ServiceException.withMessage("You are not allowed to edit accounts of other users");
         }
 
         final User user = userRepository.findOne(userId);
         if (user == null) {
-            throw new ServiceException("User does not exist");
+            throw ServiceException.withMessage("User does not exist");
         }
 
         final String oldUsername = user.getUsername();
@@ -104,7 +104,7 @@ public class UserService {
         if (StringUtil.isNotBlank(newUsername) && StringUtil.notEquals(oldUsername, newUsername)) {
             final boolean usernameReserved = userRepository.countByUsername(newUsername) == 1;
             if (usernameReserved) {
-                throw new ServiceException("Username '{}' already exists", newUsername);
+                throw ServiceException.withMessage("Username '{}' already exists", newUsername);
             }
         }
 
@@ -116,7 +116,7 @@ public class UserService {
             // ensure that there is always an admin left
             final boolean lastAdmin = userRepository.countByRole(Role.ADMIN) == 1;
             if (lastAdmin) {
-                throw new ServiceException("It is not allowed to degrade the last administrator");
+                throw ServiceException.withMessage("It is not allowed to degrade the last administrator");
             }
         }
 
@@ -156,20 +156,20 @@ public class UserService {
             // normal users can only delete their own account
             final long currentUserId = securityService.getCurrentUserId();
             if (ObjectUtil.notEquals(currentUserId, userId)) {
-                throw new ServiceException("You are not allowed to delete accounts of other users");
+                throw ServiceException.withMessage("You are not allowed to delete accounts of other users");
             }
         }
 
         final User user = userRepository.findOne(userId);
         if (user == null) {
-            throw new ServiceException("User does not exist");
+            throw ServiceException.withMessage("User does not exist");
         }
 
         if (ObjectUtil.equals(Role.ADMIN, user.getRole())) {
             // ensure that there is always an admin left
             final boolean lastAdmin = userRepository.countByRole(Role.ADMIN) == 1;
             if (lastAdmin) {
-                throw new ServiceException("The last administrator can't be removed");
+                throw ServiceException.withMessage("The last administrator can't be removed");
             }
         }
 

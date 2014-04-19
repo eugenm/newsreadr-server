@@ -108,11 +108,11 @@ public class EntryService {
 
         final Subscription subscription = userEntry.getSubscription();
         if (subscription == null) {
-            throw new ServiceException("Subscription cannot be found");
+            throw ServiceException.withMessage("Subscription cannot be found");
         }
 
         if (securityService.notBelongsToUser(subscription)) {
-            throw new ServiceException("You are not subscribing the feed the entry belongs to");
+            throw ServiceException.withMessage("You are not subscribing the feed the entry belongs to");
         }
 
         // mark as read
@@ -154,7 +154,7 @@ public class EntryService {
             final long folderId = extractId(FOLDER_REGEX, feed);
             query.and(UserEntryExpression.belongsToFolder(folderId));
         } else {
-            throw new ServiceException("Unknown feed: {}", feed);
+            throw ServiceException.withMessage("Unknown feed: {}", feed);
         }
 
         final List<UserEntry> entries = userEntryRepository.findAll(query);
