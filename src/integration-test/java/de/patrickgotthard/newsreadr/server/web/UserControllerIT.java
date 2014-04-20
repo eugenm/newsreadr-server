@@ -1,5 +1,7 @@
 package de.patrickgotthard.newsreadr.server.web;
 
+import static de.patrickgotthard.newsreadr.server.test.Tests.assertResponse;
+
 import java.util.List;
 
 import org.junit.Test;
