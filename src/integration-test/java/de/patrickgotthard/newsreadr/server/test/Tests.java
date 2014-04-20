@@ -3,7 +3,10 @@ package de.patrickgotthard.newsreadr.server.test;
 import static org.hamcrest.Matchers.is;
 import static org.junit.Assert.assertThat;
 
+import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.ResultActions;
+import org.springframework.test.web.servlet.request.MockHttpServletRequestBuilder;
+import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 
@@ -43,6 +46,18 @@ public final class Tests {
         } catch (final Exception e) {
             throw new RuntimeException(e);
         }
+    }
+
+    public static MockHttpServletRequestBuilder getAsAdmin(final String url) {
+        return get(url).header("Authorization", ADMIN_BASE_AUTH);
+    }
+
+    public static MockHttpServletRequestBuilder getAsUser(final String url) {
+        return get(url).header("Authorization", USER_BASE_AUTH);
+    }
+
+    private static MockHttpServletRequestBuilder get(final String url) {
+        return MockMvcRequestBuilders.get(url).accept(MediaType.APPLICATION_JSON);
     }
 
 }

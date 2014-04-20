@@ -1,6 +1,7 @@
 package de.patrickgotthard.newsreadr.server.web;
 
 import static de.patrickgotthard.newsreadr.server.test.Tests.assertResponse;
+import static de.patrickgotthard.newsreadr.server.test.Tests.getAsUser;
 
 import org.junit.Test;
 import org.springframework.test.web.servlet.ResultActions;

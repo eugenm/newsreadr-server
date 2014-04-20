@@ -27,16 +27,15 @@ import com.github.springtestdbunit.DbUnitTestExecutionListener;
 import com.github.springtestdbunit.annotation.DatabaseSetup;
 
 import de.patrickgotthard.newsreadr.server.persistence.entity.User;
-import de.patrickgotthard.newsreadr.server.test.AbstractIT;
-import de.patrickgotthard.newsreadr.server.test.TestConfig;
+import de.patrickgotthard.newsreadr.server.test.PersistenceTestConfig;
 import de.patrickgotthard.newsreadr.shared.response.data.Role;
 
 @RunWith(SpringJUnit4ClassRunner.class)
-@ContextConfiguration(classes = { TestConfig.class })
+@ContextConfiguration(classes = { PersistenceTestConfig.class })
 @TestExecutionListeners({ DependencyInjectionTestExecutionListener.class, TransactionalTestExecutionListener.class, DbUnitTestExecutionListener.class })
 @Transactional
 @DatabaseSetup("classpath:testdata.xml")
-public class UserRepositoryIT extends AbstractIT {
+public class UserRepositoryIT {
 
     @Autowired
     private UserRepository userRepository;

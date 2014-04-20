@@ -2,6 +2,7 @@ package de.patrickgotthard.newsreadr.server.web;
 
 import static de.patrickgotthard.newsreadr.server.test.Tests.USER_USERNAME;
 import static de.patrickgotthard.newsreadr.server.test.Tests.USER_USER_ID;
+import static de.patrickgotthard.newsreadr.server.test.Tests.getAsUser;
 import static de.patrickgotthard.newsreadr.server.test.Tests.readJson;
 import static org.hamcrest.Matchers.is;
 import static org.junit.Assert.assertThat;

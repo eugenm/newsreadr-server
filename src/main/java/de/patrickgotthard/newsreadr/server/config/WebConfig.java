@@ -20,7 +20,7 @@ import de.patrickgotthard.newsreadr.server.web.resolver.CustomArgumentResolver;
 @Configuration
 @EnableWebMvc
 @ComponentScan("de.patrickgotthard.newsreadr.server.web")
-public class MvcConfig extends WebMvcConfigurerAdapter {
+public class WebConfig extends WebMvcConfigurerAdapter {
 
     @Autowired
     private List<CustomArgumentResolver> customArgumentResolvers;

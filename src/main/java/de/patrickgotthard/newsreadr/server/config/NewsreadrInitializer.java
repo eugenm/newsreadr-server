@@ -31,7 +31,7 @@ public class NewsreadrInitializer implements WebApplicationInitializer {
 
         // dispatcher context
         final AnnotationConfigWebApplicationContext dispatcherContext = new AnnotationConfigWebApplicationContext();
-        dispatcherContext.register(MvcConfig.class);
+        dispatcherContext.register(WebConfig.class);
 
         // dispatcher servlet
         final DispatcherServlet dispatcherServlet = new DispatcherServlet(dispatcherContext);

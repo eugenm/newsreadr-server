@@ -13,13 +13,10 @@ import com.github.springtestdbunit.bean.DatabaseConfigBean;
 import com.github.springtestdbunit.bean.DatabaseDataSourceConnectionFactoryBean;
 
 import de.patrickgotthard.newsreadr.server.config.PersistenceConfig;
-import de.patrickgotthard.newsreadr.server.config.SchedulerConfig;
-import de.patrickgotthard.newsreadr.server.config.SecurityConfig;
-import de.patrickgotthard.newsreadr.server.config.ServiceConfig;
 
 @Configuration
-@Import({ PersistenceConfig.class, ServiceConfig.class, SchedulerConfig.class, SecurityConfig.class })
-public class TestConfig {
+@Import(PersistenceConfig.class)
+public class PersistenceTestConfig {
 
     /** Overrides the dataSource configured in {@link PersistenceConfig}. */
     @Bean

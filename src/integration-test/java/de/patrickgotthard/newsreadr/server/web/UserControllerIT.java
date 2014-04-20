@@ -1,6 +1,8 @@
 package de.patrickgotthard.newsreadr.server.web;
 
 import static de.patrickgotthard.newsreadr.server.test.Tests.assertResponse;
+import static de.patrickgotthard.newsreadr.server.test.Tests.getAsAdmin;
+import static de.patrickgotthard.newsreadr.server.test.Tests.getAsUser;
 
 import java.util.List;
 
