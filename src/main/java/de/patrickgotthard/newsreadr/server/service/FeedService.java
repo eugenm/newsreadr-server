@@ -10,12 +10,12 @@ import java.util.Set;
 
 import org.springframework.stereotype.Service;
 
-import com.sun.syndication.feed.synd.SyndContent;
-import com.sun.syndication.feed.synd.SyndEntry;
-import com.sun.syndication.feed.synd.SyndFeed;
-import com.sun.syndication.io.FeedException;
-import com.sun.syndication.io.SyndFeedInput;
-import com.sun.syndication.io.XmlReader;
+import com.rometools.rome.feed.synd.SyndContent;
+import com.rometools.rome.feed.synd.SyndEntry;
+import com.rometools.rome.feed.synd.SyndFeed;
+import com.rometools.rome.io.FeedException;
+import com.rometools.rome.io.SyndFeedInput;
+import com.rometools.rome.io.XmlReader;
 
 import de.patrickgotthard.newsreadr.server.persistence.entity.Entry;
 import de.patrickgotthard.newsreadr.server.persistence.entity.Feed;
@@ -44,7 +44,7 @@ public class FeedService {
 
     /**
      * Converts a {@link SyndFeed} into a {@link Feed} object.
-     * 
+     *
      * @param syndFeed The {@link SyndFeed} to convert
      * @param feedUrl URL of the feed
      * @return The converted feed object
@@ -52,7 +52,6 @@ public class FeedService {
     private static Feed convertFeed(final SyndFeed syndFeed, final String feedUrl) {
 
         final String title = extractTitle(syndFeed);
-        @SuppressWarnings("unchecked")
         final List<SyndEntry> syndEntries = syndFeed.getEntries();
         final Set<Entry> entries = convertEntries(syndEntries);
 
@@ -66,10 +65,9 @@ public class FeedService {
 
     /**
      * Extract the title of the feed.
-     * 
+     *
      * @param syndFeed The {@link SyndFeed} to extract the title from
-     * @return The title of the {@link SyndFeed} when existing. Otherwise
-     *         returns the URL of the feed
+     * @return The title of the {@link SyndFeed} when existing. Otherwise returns the URL of the feed
      */
     private static String extractTitle(final SyndFeed syndFeed) {
         String title = syndFeed.getTitle();
@@ -80,9 +78,8 @@ public class FeedService {
     }
 
     /**
-     * Converts a Collection of {@link SyndEntry} into the corresponding
-     * {@link Entry} objects.
-     * 
+     * Converts a Collection of {@link SyndEntry} into the corresponding {@link Entry} objects.
+     *
      * @param syndEntries Collection of {@link SyndEntry} to convert
      * @return The converted entries
      */
@@ -97,7 +94,7 @@ public class FeedService {
 
     /**
      * Converts a {@link SyndEntry} into the corresponding {@link Entry} object.
-     * 
+     *
      * @param syndEntry The {@link SyndEntry} to convert
      * @return The converted entry
      */
@@ -121,10 +118,9 @@ public class FeedService {
 
     /**
      * Extracts the publish date from a {@link SyndEntry}.
-     * 
+     *
      * @param syndEntry The {@link SyndEntry} to extract the publish date from
-     * @return The publish date of the {@link SyndEntry} if existing. Otherwise
-     *         returns the date of the last update.
+     * @return The publish date of the {@link SyndEntry} if existing. Otherwise returns the date of the last update.
      */
     private static Date extractPublishDate(final SyndEntry syndEntry) {
         Date publishDate = syndEntry.getPublishedDate();
@@ -136,13 +132,12 @@ public class FeedService {
 
     /**
      * Extracts the content of a {@link SyndEntry}.
-     * 
+     *
      * @param syndEntry {@link SyndEntry} to extract the content from
      * @return Content of the {@link SyndEntry}
      */
     private static String extractContent(final SyndEntry syndEntry) {
         final StringBuilder content = new StringBuilder();
-        @SuppressWarnings("unchecked")
         final List<SyndContent> syndContents = syndEntry.getContents();
         if (!syndContents.isEmpty()) {
             for (final SyndContent syndContent : syndContents) {
