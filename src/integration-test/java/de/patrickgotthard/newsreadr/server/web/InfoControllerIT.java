@@ -1,35 +1,30 @@
 package de.patrickgotthard.newsreadr.server.web;
 
-import static de.patrickgotthard.newsreadr.server.test.Tests.USER_USERNAME;
-import static de.patrickgotthard.newsreadr.server.test.Tests.USER_USER_ID;
-import static de.patrickgotthard.newsreadr.server.test.Tests.getAsUser;
-import static de.patrickgotthard.newsreadr.server.test.Tests.readJson;
+import static de.patrickgotthard.newsreadr.server.test.TestData.USER_USERNAME;
+import static de.patrickgotthard.newsreadr.server.test.TestData.USER_USER_ID;
 import static org.hamcrest.Matchers.is;
 import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
 
 import org.junit.Test;
-import org.springframework.test.web.servlet.ResultActions;
-import org.springframework.test.web.servlet.request.MockHttpServletRequestBuilder;
+import org.junit.runner.RunWith;
+import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
-import de.patrickgotthard.newsreadr.server.test.AbstractIT;
+import de.patrickgotthard.newsreadr.server.test.IntegrationTest;
+import de.patrickgotthard.newsreadr.server.test.ControllerTestUtil;
 import de.patrickgotthard.newsreadr.shared.response.GetInfosResponse;
 
-public class InfoControllerIT extends AbstractIT {
+@RunWith(SpringJUnit4ClassRunner.class)
+@IntegrationTest
+public class InfoControllerIT {
 
     @Test
-    public void testGetInfos() throws Exception {
-
-        final MockHttpServletRequestBuilder request = getAsUser("/api?method=get_infos");
-        final ResultActions result = mvc.perform(request);
-        final String json = result.andReturn().getResponse().getContentAsString();
-        final GetInfosResponse response = readJson(json, GetInfosResponse.class);
-
+    public void testGetInfos() {
+        final GetInfosResponse response = ControllerTestUtil.getAsUser("?method=get_infos", GetInfosResponse.class);
         assertThat(response.getUserId(), is(USER_USER_ID));
         assertThat(response.getUsername(), is(USER_USERNAME));
         assertTrue(response.getServerVersion().matches("\\d+\\.\\d+\\.\\d+(-SNAPSHOT)?"));
         assertTrue(response.getApiVersion().matches("\\d+\\.\\d+\\.\\d+(-SNAPSHOT)?"));
-
     }
 
 }

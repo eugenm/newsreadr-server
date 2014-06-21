@@ -1,54 +1,63 @@
 package de.patrickgotthard.newsreadr.server.web;
 
-import static de.patrickgotthard.newsreadr.server.test.Tests.assertResponse;
-import static de.patrickgotthard.newsreadr.server.test.Tests.getAsAdmin;
-import static de.patrickgotthard.newsreadr.server.test.Tests.getAsUser;
-
-import java.util.List;
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.is;
+import static org.hamcrest.Matchers.nullValue;
 
 import org.junit.Test;
-import org.springframework.test.web.servlet.ResultActions;
-import org.springframework.test.web.servlet.request.MockHttpServletRequestBuilder;
+import org.junit.runner.RunWith;
+import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
-import de.patrickgotthard.newsreadr.server.test.AbstractIT;
-import de.patrickgotthard.newsreadr.server.util.ListUtil;
+import de.patrickgotthard.newsreadr.server.test.IntegrationTest;
+import de.patrickgotthard.newsreadr.server.test.ControllerTestUtil;
 import de.patrickgotthard.newsreadr.shared.response.GetUsersResponse;
 import de.patrickgotthard.newsreadr.shared.response.Response;
 import de.patrickgotthard.newsreadr.shared.response.data.Role;
 import de.patrickgotthard.newsreadr.shared.response.data.UserData;
 
-public class UserControllerIT extends AbstractIT {
+@RunWith(SpringJUnit4ClassRunner.class)
+@IntegrationTest
+public class UserControllerIT {
 
     @Test
-    public void testAddUser() throws Exception {
-        final MockHttpServletRequestBuilder request = getAsAdmin("/api?method=add_user&username=newUser&password=password&role=USER");
-        final ResultActions result = mvc.perform(request);
-        assertResponse(result, Response.success());
+    public void testAddUser() {
+        final Response response = ControllerTestUtil.getAsAdmin("?method=add_user&username=newUser&password=password&role=USER", Response.class);
+        assertThat(response.getSuccess(), is(true));
+        assertThat(response.getMessage(), is(nullValue()));
     }
 
     @Test
-    public void testGetUsers() throws Exception {
-        final MockHttpServletRequestBuilder request = getAsAdmin("/api?method=get_users");
-        final ResultActions result = mvc.perform(request);
-        final UserData user = new UserData(1l, "user", Role.USER);
-        final UserData admin = new UserData(2l, "admin", Role.ADMIN);
-        final List<UserData> userList = ListUtil.toList(user, admin);
-        final GetUsersResponse expected = new GetUsersResponse(userList);
-        assertResponse(result, expected);
+    public void testGetUsers() {
+
+        final GetUsersResponse response = ControllerTestUtil.getAsAdmin("?method=get_users", GetUsersResponse.class);
+        final UserData user = response.getUsers().get(0);
+        final UserData admin = response.getUsers().get(1);
+
+        assertThat(response.getSuccess(), is(true));
+        assertThat(response.getMessage(), is(nullValue()));
+
+        assertThat(user.getUserId(), is(1l));
+        assertThat(user.getUsername(), is("user"));
+        assertThat(user.getRole(), is(Role.USER));
+
+        assertThat(admin.getUserId(), is(2l));
+        assertThat(admin.getUsername(), is("admin"));
+        assertThat(admin.getRole(), is(Role.ADMIN));
+
     }
 
     @Test
-    public void testUpdateUser() throws Exception {
-        final MockHttpServletRequestBuilder request = getAsUser("/api?method=update_user&userId=1&username=newUser&password=newUser&role=USER");
-        final ResultActions result = mvc.perform(request);
-        assertResponse(result, Response.success());
+    public void testUpdateUser() {
+        final Response response = ControllerTestUtil.getAsUser("?method=update_user&userId=1&username=newUser&password=newUser&role=USER", Response.class);
+        assertThat(response.getSuccess(), is(true));
+        assertThat(response.getMessage(), is(nullValue()));
     }
 
     @Test
-    public void testRemoveUser() throws Exception {
-        final MockHttpServletRequestBuilder request = getAsUser("/api?method=remove_user&userId=1");
-        final ResultActions result = mvc.perform(request);
-        assertResponse(result, Response.success());
+    public void testRemoveUser() {
+        final Response response = ControllerTestUtil.getAsUser("?method=remove_user&userId=1", Response.class);
+        assertThat(response.getSuccess(), is(true));
+        assertThat(response.getMessage(), is(nullValue()));
     }
 
 }

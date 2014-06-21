@@ -1,23 +1,24 @@
 package de.patrickgotthard.newsreadr.server.web;
 
-import static de.patrickgotthard.newsreadr.server.test.Tests.assertResponse;
-import static de.patrickgotthard.newsreadr.server.test.Tests.getAsUser;
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.is;
 
 import org.junit.Test;
-import org.springframework.test.web.servlet.ResultActions;
-import org.springframework.test.web.servlet.request.MockHttpServletRequestBuilder;
+import org.junit.runner.RunWith;
+import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
-import de.patrickgotthard.newsreadr.server.test.AbstractIT;
+import de.patrickgotthard.newsreadr.server.test.IntegrationTest;
+import de.patrickgotthard.newsreadr.server.test.ControllerTestUtil;
 import de.patrickgotthard.newsreadr.shared.response.GetEntryResponse;
 
-public class EntryControllerIT extends AbstractIT {
+@RunWith(SpringJUnit4ClassRunner.class)
+@IntegrationTest
+public class EntryControllerIT {
 
     @Test
-    public void testGetEntry() throws Exception {
-        final MockHttpServletRequestBuilder request = getAsUser("/api?method=get_entry&userEntryId=1");
-        final ResultActions result = mvc.perform(request);
-        final GetEntryResponse expected = new GetEntryResponse("content1");
-        assertResponse(result, expected);
+    public void testGetEntry() {
+        final GetEntryResponse response = ControllerTestUtil.getAsUser("?method=get_entry&userEntryId=1", GetEntryResponse.class);
+        assertThat(response.getContent(), is("content1"));
     }
 
 }

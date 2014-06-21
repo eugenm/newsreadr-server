@@ -4,7 +4,6 @@ import static org.hamcrest.Matchers.instanceOf;
 import static org.hamcrest.Matchers.is;
 import static org.junit.Assert.assertThat;
 import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.when;
 
 import org.junit.Before;
@@ -14,6 +13,7 @@ import org.springframework.security.core.userdetails.UsernameNotFoundException;
 
 import de.patrickgotthard.newsreadr.server.persistence.entity.User;
 import de.patrickgotthard.newsreadr.server.persistence.repository.UserRepository;
+import de.patrickgotthard.newsreadr.shared.response.data.Role;
 
 public class NewsreadrUserDetailsServiceTest {
 
@@ -27,9 +27,7 @@ public class NewsreadrUserDetailsServiceTest {
     @Before
     public void setup() {
 
-        final User user = spy(new User());
-        user.setUsername(EXISTING_USERNAME);
-        when(user.getId()).thenReturn(USER_ID);
+        final User user = new User.Builder().setId(USER_ID).setUsername(EXISTING_USERNAME).setRole(Role.USER).build();
 
         userRepository = mock(UserRepository.class);
         when(userRepository.findByUsername(EXISTING_USERNAME)).thenReturn(user);

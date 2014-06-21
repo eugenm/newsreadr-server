@@ -39,6 +39,31 @@ public class FrontendController {
         return "login";
     }
 
+    @RequestMapping("/partial/account")
+    public String account() {
+        return "partial/account";
+    }
+
+    @RequestMapping("/partial/admin-navbar")
+    public String adminNavbar() {
+        return "partial/admin-navbar";
+    }
+
+    @RequestMapping("/partial/entries")
+    public String entries() {
+        return "partial/entries";
+    }
+
+    @RequestMapping("/partial/subscriptions")
+    public String subscriptions() {
+        return "partial/subscriptions";
+    }
+
+    @RequestMapping("/partial/users")
+    public String users() {
+        return "partial/users";
+    }
+
     @RequestMapping("/import")
     public Response importSubscriptions(final MultipartFile opmlFile) {
         return subscriptionService.importSubscriptions(opmlFile);

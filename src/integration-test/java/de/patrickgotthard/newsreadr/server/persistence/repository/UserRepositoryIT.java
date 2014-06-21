@@ -1,40 +1,30 @@
 package de.patrickgotthard.newsreadr.server.persistence.repository;
 
-import static de.patrickgotthard.newsreadr.server.test.Tests.ADMIN_PASSWORD;
-import static de.patrickgotthard.newsreadr.server.test.Tests.ADMIN_USERNAME;
-import static de.patrickgotthard.newsreadr.server.test.Tests.ADMIN_USER_ID;
-import static de.patrickgotthard.newsreadr.server.test.Tests.UNKNOWN_USERNAME;
-import static de.patrickgotthard.newsreadr.server.test.Tests.USER_PASSWORD;
-import static de.patrickgotthard.newsreadr.server.test.Tests.USER_USERNAME;
-import static de.patrickgotthard.newsreadr.server.test.Tests.USER_USER_ID;
+import static de.patrickgotthard.newsreadr.server.test.TestData.ADMIN_PASSWORD;
+import static de.patrickgotthard.newsreadr.server.test.TestData.ADMIN_USERNAME;
+import static de.patrickgotthard.newsreadr.server.test.TestData.ADMIN_USER_ID;
+import static de.patrickgotthard.newsreadr.server.test.TestData.UNKNOWN_USERNAME;
+import static de.patrickgotthard.newsreadr.server.test.TestData.USER_PASSWORD;
+import static de.patrickgotthard.newsreadr.server.test.TestData.USER_USERNAME;
+import static de.patrickgotthard.newsreadr.server.test.TestData.USER_USER_ID;
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.notNullValue;
 import static org.hamcrest.Matchers.nullValue;
 import static org.junit.Assert.assertThat;
 
-import javax.transaction.Transactional;
-
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.test.context.ContextConfiguration;
-import org.springframework.test.context.TestExecutionListeners;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
-import org.springframework.test.context.support.DependencyInjectionTestExecutionListener;
-import org.springframework.test.context.transaction.TransactionalTestExecutionListener;
-
-import com.github.springtestdbunit.DbUnitTestExecutionListener;
-import com.github.springtestdbunit.annotation.DatabaseSetup;
+import org.springframework.transaction.annotation.Transactional;
 
 import de.patrickgotthard.newsreadr.server.persistence.entity.User;
-import de.patrickgotthard.newsreadr.server.test.PersistenceTestConfig;
+import de.patrickgotthard.newsreadr.server.test.IntegrationTest;
 import de.patrickgotthard.newsreadr.shared.response.data.Role;
 
 @RunWith(SpringJUnit4ClassRunner.class)
-@ContextConfiguration(classes = { PersistenceTestConfig.class })
-@TestExecutionListeners({ DependencyInjectionTestExecutionListener.class, TransactionalTestExecutionListener.class, DbUnitTestExecutionListener.class })
+@IntegrationTest
 @Transactional
-@DatabaseSetup("classpath:testdata.xml")
 public class UserRepositoryIT {
 
     @Autowired

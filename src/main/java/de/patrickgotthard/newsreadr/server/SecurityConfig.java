@@ -1,17 +1,14 @@
-package de.patrickgotthard.newsreadr.server.config;
+package de.patrickgotthard.newsreadr.server;
 
 import javax.annotation.PostConstruct;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.AdviceMode;
 import org.springframework.context.annotation.Bean;
-import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
 import org.springframework.security.config.annotation.method.configuration.EnableGlobalMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
-import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -23,9 +20,7 @@ import de.patrickgotthard.newsreadr.server.security.NewsreadrUserDetailsService;
 import de.patrickgotthard.newsreadr.shared.response.data.Role;
 
 @Configuration
-@ComponentScan("de.patrickgotthard.newsreadr.server.security")
 @EnableGlobalMethodSecurity(mode = AdviceMode.ASPECTJ, securedEnabled = true)
-@EnableWebSecurity
 public class SecurityConfig extends WebSecurityConfigurerAdapter {
 
     private static final String INITIAL_ADMIN_USERNAME = "admin";
@@ -57,15 +52,9 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
         return new BCryptPasswordEncoder();
     }
 
-    @Override
-    protected void configure(final AuthenticationManagerBuilder auth) throws Exception {
+    @Autowired
+    public void configureGlobal(final AuthenticationManagerBuilder auth) throws Exception {
         auth.userDetailsService(userDetailsService).passwordEncoder(passwordEncoder());
-    }
-
-    @Bean
-    @Override
-    public AuthenticationManager authenticationManagerBean() throws Exception {
-        return super.authenticationManagerBean();
     }
 
     @Override
@@ -73,14 +62,10 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
         // @formatter:off
         http
         .authorizeRequests()
-        .antMatchers("/css/login.css").permitAll()
-        .antMatchers("/favicon.ico").permitAll()
-        .antMatchers("/lib/bootstrap/css/bootstrap.min.css").permitAll()
-        .antMatchers("/lib/bootstrap/css/bootstrap-theme.min.css").permitAll()
-        .antMatchers("/lib/bootstrap/js/bootstrap.min.js").permitAll()
-        .antMatchers("/lib/html5shiv/html5shiv.js").permitAll()
-        .antMatchers("/lib/jquery/jquery-1.11.0.min.js").permitAll()
-        .antMatchers("/lib/respond/respond.min.js").permitAll()
+        .antMatchers("/css/**").permitAll()
+        .antMatchers("/js/**").permitAll()
+        .antMatchers("/lib/**").permitAll()
+        .antMatchers("**/favicon.ico").permitAll()
         .antMatchers("/login*").permitAll()
         .anyRequest().authenticated()
         .and()

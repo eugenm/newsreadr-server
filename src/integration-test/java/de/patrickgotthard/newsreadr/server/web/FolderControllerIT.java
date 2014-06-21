@@ -1,36 +1,40 @@
 package de.patrickgotthard.newsreadr.server.web;
 
-import static de.patrickgotthard.newsreadr.server.test.Tests.assertResponse;
-import static de.patrickgotthard.newsreadr.server.test.Tests.getAsUser;
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.is;
+import static org.hamcrest.Matchers.nullValue;
 
 import org.junit.Test;
-import org.springframework.test.web.servlet.ResultActions;
-import org.springframework.test.web.servlet.request.MockHttpServletRequestBuilder;
+import org.junit.runner.RunWith;
+import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
-import de.patrickgotthard.newsreadr.server.test.AbstractIT;
+import de.patrickgotthard.newsreadr.server.test.IntegrationTest;
+import de.patrickgotthard.newsreadr.server.test.ControllerTestUtil;
 import de.patrickgotthard.newsreadr.shared.response.Response;
 
-public class FolderControllerIT extends AbstractIT {
+@RunWith(SpringJUnit4ClassRunner.class)
+@IntegrationTest
+public class FolderControllerIT {
 
     @Test
-    public void testAddFolder() throws Exception {
-        final MockHttpServletRequestBuilder request = getAsUser("/api?method=add_folder&title=newFolder");
-        final ResultActions result = mvc.perform(request);
-        assertResponse(result, Response.success());
+    public void testAddFolder() {
+        final Response response = ControllerTestUtil.getAsUser("?method=add_folder&title=newFolder", Response.class);
+        assertThat(response.getSuccess(), is(true));
+        assertThat(response.getMessage(), is(nullValue()));
     }
 
     @Test
-    public void testUpdateFolder() throws Exception {
-        final MockHttpServletRequestBuilder request = getAsUser("/api?method=update_folder&folderId=1&title=newFolder");
-        final ResultActions resultActions = mvc.perform(request);
-        assertResponse(resultActions, Response.success());
+    public void testUpdateFolder() {
+        final Response response = ControllerTestUtil.getAsUser("?method=update_folder&folderId=1&title=newFolder", Response.class);
+        assertThat(response.getSuccess(), is(true));
+        assertThat(response.getMessage(), is(nullValue()));
     }
 
     @Test
-    public void testRemoveFolder() throws Exception {
-        final MockHttpServletRequestBuilder request = getAsUser("/api?method=remove_folder&folderId=1");
-        final ResultActions resultActions = mvc.perform(request);
-        assertResponse(resultActions, Response.success());
+    public void testRemoveFolder() {
+        final Response response = ControllerTestUtil.getAsUser("?method=remove_folder&folderId=1", Response.class);
+        assertThat(response.getSuccess(), is(true));
+        assertThat(response.getMessage(), is(nullValue()));
     }
 
 }

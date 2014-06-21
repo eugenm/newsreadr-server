@@ -6,6 +6,7 @@ import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 
+import de.patrickgotthard.newsreadr.server.persistence.entity.User;
 import de.patrickgotthard.newsreadr.server.util.ListUtil;
 import de.patrickgotthard.newsreadr.shared.response.data.Role;
 
@@ -17,16 +18,22 @@ public class NewsreadrUserDetails implements UserDetails {
     private final String username;
     private final String password;
     private final Role role;
+    private final Collection<? extends GrantedAuthority> authorities;
 
-    public NewsreadrUserDetails(final long userId, final String username, final String password, final Role role) {
-        this.userId = userId;
-        this.username = username;
-        this.password = password;
-        this.role = role;
+    public NewsreadrUserDetails(final User user) {
+        userId = user.getId();
+        username = user.getUsername();
+        password = user.getPassword();
+        role = user.getRole();
+        authorities = ListUtil.toList(new SimpleGrantedAuthority("ROLE_" + role.name()));
     }
 
     public long getUserId() {
         return userId;
+    }
+
+    public Role getRole() {
+        return role;
     }
 
     @Override
@@ -39,13 +46,9 @@ public class NewsreadrUserDetails implements UserDetails {
         return password;
     }
 
-    public Role getRole() {
-        return role;
-    }
-
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
-        return ListUtil.toList(new SimpleGrantedAuthority("ROLE_" + role.name()));
+        return authorities;
     }
 
     @Override

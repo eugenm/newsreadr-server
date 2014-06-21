@@ -35,12 +35,13 @@ public class User extends AbstractEntity {
     public User() {
     }
 
-    private User(final String username, final String password, final Role role, final Set<Folder> folders, final Set<Subscription> subscriptions) {
-        this.username = username;
-        this.password = password;
-        this.role = role;
-        this.folders = folders;
-        this.subscriptions = subscriptions;
+    private User(final Builder builder) {
+        setId(builder.id);
+        username = builder.username;
+        password = builder.password;
+        role = builder.role;
+        folders = builder.folders;
+        subscriptions = builder.subscriptions;
     }
 
     public String getUsername() {
@@ -85,11 +86,17 @@ public class User extends AbstractEntity {
 
     public static class Builder {
 
+        private Long id;
         private String username;
         private String password;
         private Role role;
         private Set<Folder> folders;
         private Set<Subscription> subscriptions;
+
+        public Builder setId(final Long id) {
+            this.id = id;
+            return this;
+        }
 
         public Builder setUsername(final String username) {
             this.username = username;
@@ -117,7 +124,7 @@ public class User extends AbstractEntity {
         }
 
         public User build() {
-            return new User(username, password, role, folders, subscriptions);
+            return new User(this);
         }
 
     }

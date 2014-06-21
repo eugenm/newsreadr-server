@@ -1,29 +1,35 @@
 package de.patrickgotthard.newsreadr.server.web;
 
-import static de.patrickgotthard.newsreadr.server.test.Tests.assertResponse;
-import static de.patrickgotthard.newsreadr.server.test.Tests.getAsUser;
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.is;
+import static org.hamcrest.Matchers.nullValue;
 
 import org.junit.Test;
-import org.springframework.test.web.servlet.ResultActions;
-import org.springframework.test.web.servlet.request.MockHttpServletRequestBuilder;
+import org.junit.runner.RunWith;
+import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
-import de.patrickgotthard.newsreadr.server.test.AbstractIT;
+import de.patrickgotthard.newsreadr.server.test.IntegrationTest;
+import de.patrickgotthard.newsreadr.server.test.ControllerTestUtil;
 import de.patrickgotthard.newsreadr.shared.response.Response;
 
-public class BookmarkControllerIT extends AbstractIT {
+@RunWith(SpringJUnit4ClassRunner.class)
+@IntegrationTest
+public class BookmarkControllerIT {
+
+    protected static final String API_URL = "http://localhost:8080/api";
 
     @Test
-    public void testAddBookmark() throws Exception {
-        final MockHttpServletRequestBuilder request = getAsUser("/api?method=add_bookmark&userEntryId=1");
-        final ResultActions result = mvc.perform(request);
-        assertResponse(result, Response.success());
+    public void testAddBookmark() {
+        final Response response = ControllerTestUtil.getAsUser("?method=add_bookmark&userEntryId=1", Response.class);
+        assertThat(response.getSuccess(), is(true));
+        assertThat(response.getMessage(), is(nullValue()));
     }
 
     @Test
-    public void testRemoveBookmark() throws Exception {
-        final MockHttpServletRequestBuilder request = getAsUser("/api?method=remove_bookmark&userEntryId=2");
-        final ResultActions result = mvc.perform(request);
-        assertResponse(result, Response.success());
+    public void testRemoveBookmark() {
+        final Response response = ControllerTestUtil.getAsUser("?method=remove_bookmark&userEntryId=2", Response.class);
+        assertThat(response.getSuccess(), is(true));
+        assertThat(response.getMessage(), is(nullValue()));
     }
 
 }

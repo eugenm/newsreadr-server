@@ -15,16 +15,18 @@ import org.springframework.security.authentication.UsernamePasswordAuthenticatio
 import org.springframework.security.core.context.SecurityContext;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.test.context.TestExecutionListeners;
+import org.springframework.test.context.transaction.TransactionalTestExecutionListener;
 import org.springframework.transaction.annotation.Transactional;
 
 import de.patrickgotthard.newsreadr.server.persistence.entity.AbstractUserEntity;
 import de.patrickgotthard.newsreadr.server.persistence.entity.User;
 import de.patrickgotthard.newsreadr.server.persistence.repository.UserRepository;
 import de.patrickgotthard.newsreadr.server.security.NewsreadrUserDetails;
-import de.patrickgotthard.newsreadr.server.test.AbstractTransactionalUT;
 import de.patrickgotthard.newsreadr.shared.response.data.Role;
 
-public class SecurityServiceTest extends AbstractTransactionalUT {
+@TestExecutionListeners(TransactionalTestExecutionListener.class)
+public class SecurityServiceTest {
 
     private static final String USERNAME = "username";
     private static final long USER_ID = 1;
@@ -42,7 +44,9 @@ public class SecurityServiceTest extends AbstractTransactionalUT {
         passwordEncoder = mock(PasswordEncoder.class);
         securityService = new SecurityService(userRepository, passwordEncoder);
 
-        final NewsreadrUserDetails userDetails = new NewsreadrUserDetails(USER_ID, USERNAME, PASSWORD, ROLE);
+        final User user = new User.Builder().setId(USER_ID).setUsername(USERNAME).setPassword(PASSWORD).setRole(ROLE).build();
+
+        final NewsreadrUserDetails userDetails = new NewsreadrUserDetails(user);
         final UsernamePasswordAuthenticationToken authentication = new UsernamePasswordAuthenticationToken(userDetails, null);
 
         final SecurityContext securityContext = SecurityContextHolder.getContext();

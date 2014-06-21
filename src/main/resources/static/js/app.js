@@ -32,19 +32,19 @@ newsreadrApp.config(['$routeProvider',
 		$routeProvider.
 			when('/entries', {
 				controller: 'EntriesController',
-				templateUrl: 'partial/entries.jsp'
+				templateUrl: 'partial/entries'
 			}).
 			when('/subscriptions', {
 				controller: 'SubscriptionsController',
-				templateUrl: 'partial/subscriptions.jsp'
+				templateUrl: 'partial/subscriptions'
 			}).
 			when('/users', {
 				controller: 'UsersController',
-				templateUrl: 'partial/users.jsp'
+				templateUrl: 'partial/users'
 			}).
 			when('/profile', {
 				controller: 'AccountController',
-				templateUrl: 'partial/account.jsp'
+				templateUrl: 'partial/account'
 			}).
 			otherwise({
 				redirectTo: '/entries'

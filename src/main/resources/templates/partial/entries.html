@@ -25,11 +25,11 @@
 		    <li ng-repeat="node in nodes">
                 <i class="fa fa-list-ul fa-fw" ng-show="node.type == 'ALL'"></i>
                 <i class="fa fa-bookmark fa-fw" ng-show="node.type == 'BOOKMARKS'"></i>
-                <i class="fa fa-angle-right fa-fw pointer" ng-show="node.type == 'FOLDER' && !node.expanded" ng-click="toggleFolder(node)"></i>
-                <i class="fa fa-angle-down fa-fw pointer" ng-show="node.type == 'FOLDER' && node.expanded" ng-click="toggleFolder(node)"></i>
+                <i class="fa fa-angle-right fa-fw pointer" ng-show="node.type == 'FOLDER' &amp;&amp; !node.expanded" ng-click="toggleFolder(node)"></i>
+                <i class="fa fa-angle-down fa-fw pointer" ng-show="node.type == 'FOLDER' &amp;&amp; node.expanded" ng-click="toggleFolder(node)"></i>
                 <span class="unread" ng-hide="node.unread == 0">{{node.unread}}</span>
                 <span class="pointer" ng-click="changeFeed(node.feed)">{{node.title}}</span>
-                <ul ng-show="node.type == 'FOLDER' && node.expanded && node.subscriptions.length != 0">
+                <ul ng-show="node.type == 'FOLDER' &amp;&amp; node.expanded &amp;&amp; node.subscriptions.length != 0">
                     <li ng-repeat="subscription in node.subscriptions">
                         <span class="unread" ng-hide="subscription.unread == 0">{{subscription.unread}}</span>
                         <span class="pointer" ng-click="changeFeed(subscription.feed)">{{subscription.title}}</span>
@@ -50,7 +50,7 @@
 		            <td class="pointer date" ng-click="toggleEntry(entry)">{{entry.publishDate | date: 'dd.MM.yyyy / HH:mm'}}</td>
 		            <td class="action"><a href="{{entry.url}}" target="_blank"><i class="fa fa-external-link-square fa-fw"></i></a></td>
 		        </tr>
-		        <tr class="content-row" ng-show="entry.visible" ng-repeat-end>
+		        <tr class="content-row" ng-show="entry.visible" ng-repeat-end="">
 		            <td colspan="5">
 		                <div class="content" ng-bind-html="entry.content"></div>
 		            </td>

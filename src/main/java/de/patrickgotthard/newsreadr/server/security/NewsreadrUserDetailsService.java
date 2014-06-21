@@ -27,7 +27,7 @@ public class NewsreadrUserDetailsService implements UserDetailsService {
             throw new UsernameNotFoundException("User not found: " + username);
         }
 
-        return new NewsreadrUserDetails(user.getId(), username, user.getPassword(), user.getRole());
+        return new NewsreadrUserDetails(user);
 
     }
 
