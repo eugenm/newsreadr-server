@@ -22,15 +22,6 @@ public class WebConfig extends WebMvcConfigurerAdapter {
         argumentResolvers.addAll(customArgumentResolvers);
     }
 
-    // @Override
-    // public void addResourceHandlers(final ResourceHandlerRegistry registry) {
-    // registry.addResourceHandler("/css/**").addResourceLocations("/css/");
-    // registry.addResourceHandler("/js/**").addResourceLocations("/js/");
-    // registry.addResourceHandler("/lib/**").addResourceLocations("/lib/");
-    // registry.addResourceHandler("/partial/**").addResourceLocations("/templates/partial/");
-    // registry.addResourceHandler("/favicon.ico").addResourceLocations("/favicon.ico");
-    // }
-
     @Bean
     public CommonsMultipartResolver multipartResolver() {
         return new CommonsMultipartResolver();

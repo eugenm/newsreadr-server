@@ -9,6 +9,7 @@ import javax.xml.bind.JAXBException;
 import org.apache.commons.io.IOUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -39,29 +40,9 @@ public class FrontendController {
         return "login";
     }
 
-    @RequestMapping("/partial/account")
-    public String account() {
-        return "partial/account";
-    }
-
-    @RequestMapping("/partial/admin-navbar")
-    public String adminNavbar() {
-        return "partial/admin-navbar";
-    }
-
-    @RequestMapping("/partial/entries")
-    public String entries() {
-        return "partial/entries";
-    }
-
-    @RequestMapping("/partial/subscriptions")
-    public String subscriptions() {
-        return "partial/subscriptions";
-    }
-
-    @RequestMapping("/partial/users")
-    public String users() {
-        return "partial/users";
+    @RequestMapping("/partial/{path}")
+    public String account(@PathVariable final String path) {
+        return "partial/" + path;
     }
 
     @RequestMapping("/import")
