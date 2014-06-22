@@ -36,34 +36,27 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
 
     @Override
     protected void configure(final HttpSecurity http) throws Exception {
-        // @formatter:off
-        http
-        .authorizeRequests()
-        .antMatchers("/css/**").permitAll()
-        .antMatchers("/js/**").permitAll()
-        .antMatchers("/lib/**").permitAll()
-        .antMatchers("**/favicon.ico").permitAll()
-        .antMatchers("/login*").permitAll()
-        .anyRequest().authenticated()
-        .and()
-        .formLogin()
-        .loginPage("/login")
-        .permitAll()
-        .and()
-        .httpBasic()
-        .and()
-        .logout()
-        .logoutUrl("/logout")
-        .permitAll()
-        .and()
-        .exceptionHandling()
-        .authenticationEntryPoint(authenticationEntryPoint)
-        .and()
-        .csrf()
-        .disable()
-        .headers()
-        .xssProtection().disable();
-        // @formatter:on
-    }
 
+        // url protection
+        http.authorizeRequests().antMatchers("/css/**", "/js/**", "/lib/**", "/favicon.ico", "/login").permitAll().anyRequest().authenticated();
+
+        // enable basic auth
+        http.httpBasic();
+
+        // form login
+        http.formLogin().loginPage("/login").permitAll();
+
+        // logout
+        http.logout().logoutUrl("/logout").permitAll();
+
+        // enable api-aware exception handling
+        http.exceptionHandling().authenticationEntryPoint(authenticationEntryPoint);
+
+        // disable csrf
+        http.csrf().disable();
+
+        // disable xss protection
+        http.headers().xssProtection().disable();
+
+    }
 }
