@@ -1,7 +1,5 @@
 package de.patrickgotthard.newsreadr.server;
 
-import javax.annotation.PostConstruct;
-
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.AdviceMode;
 import org.springframework.context.annotation.Bean;
@@ -13,39 +11,18 @@ import org.springframework.security.config.annotation.web.configuration.WebSecur
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 
-import de.patrickgotthard.newsreadr.server.persistence.entity.User;
-import de.patrickgotthard.newsreadr.server.persistence.repository.UserRepository;
 import de.patrickgotthard.newsreadr.server.security.NewsreadrAuthenticationEntryPoint;
 import de.patrickgotthard.newsreadr.server.security.NewsreadrUserDetailsService;
-import de.patrickgotthard.newsreadr.shared.response.data.Role;
 
 @Configuration
-@EnableGlobalMethodSecurity(mode = AdviceMode.ASPECTJ, securedEnabled = true)
+@EnableGlobalMethodSecurity(mode = AdviceMode.ASPECTJ, securedEnabled = true, prePostEnabled = true)
 public class SecurityConfig extends WebSecurityConfigurerAdapter {
-
-    private static final String INITIAL_ADMIN_USERNAME = "admin";
-    private static final String INITIAL_ADMIN_PASSWORD = "password";
 
     @Autowired
     private NewsreadrUserDetailsService userDetailsService;
 
     @Autowired
     private NewsreadrAuthenticationEntryPoint authenticationEntryPoint;
-
-    @Autowired
-    private UserRepository userRepository;
-
-    @PostConstruct
-    public void createAdminUser() {
-        if (userRepository.count() == 0) {
-            final PasswordEncoder passwordEncoder = passwordEncoder();
-            final User user = new User();
-            user.setUsername(INITIAL_ADMIN_USERNAME);
-            user.setPassword(passwordEncoder.encode(INITIAL_ADMIN_PASSWORD));
-            user.setRole(Role.ADMIN);
-            userRepository.save(user);
-        }
-    }
 
     @Bean
     public PasswordEncoder passwordEncoder() {
