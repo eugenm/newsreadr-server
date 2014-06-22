@@ -140,6 +140,12 @@ newsreadrControllers.controller('SubscriptionsController', ['$scope', '$http',
 			});
 		}
 		
+		// imported subscriptions
+		$scope.importedSubscriptions = function() {
+			$scope.loadSubscriptions();
+			$('#importDialog').modal('hide');
+		};
+		
 		// export subscriptions
 		$scope.exportSubscriptions = function() {
 			window.location.href = "export";
