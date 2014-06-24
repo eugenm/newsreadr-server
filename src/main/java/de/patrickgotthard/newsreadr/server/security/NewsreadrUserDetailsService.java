@@ -6,8 +6,8 @@ import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Component;
 
-import de.patrickgotthard.newsreadr.server.persistence.entity.User;
-import de.patrickgotthard.newsreadr.server.persistence.repository.UserRepository;
+import de.patrickgotthard.newsreadr.server.users.User;
+import de.patrickgotthard.newsreadr.server.users.UserRepository;
 
 @Component
 public class NewsreadrUserDetailsService implements UserDetailsService {

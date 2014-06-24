@@ -11,8 +11,8 @@ import org.junit.Test;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 
-import de.patrickgotthard.newsreadr.server.persistence.entity.User;
-import de.patrickgotthard.newsreadr.server.persistence.repository.UserRepository;
+import de.patrickgotthard.newsreadr.server.users.User;
+import de.patrickgotthard.newsreadr.server.users.UserRepository;
 import de.patrickgotthard.newsreadr.shared.response.data.Role;
 
 public class NewsreadrUserDetailsServiceTest {

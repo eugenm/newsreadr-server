@@ -10,7 +10,7 @@ import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.web.authentication.LoginUrlAuthenticationEntryPoint;
 import org.springframework.stereotype.Component;
 
-import de.patrickgotthard.newsreadr.server.util.HttpServletRequestUtil;
+import de.patrickgotthard.newsreadr.server.common.util.HttpServletRequests;
 
 @Component
 public class NewsreadrAuthenticationEntryPoint extends LoginUrlAuthenticationEntryPoint {
@@ -21,7 +21,7 @@ public class NewsreadrAuthenticationEntryPoint extends LoginUrlAuthenticationEnt
 
     @Override
     public void commence(final HttpServletRequest req, final HttpServletResponse res, final AuthenticationException ex) throws IOException, ServletException {
-        if (HttpServletRequestUtil.isApiRequest(req)) {
+        if (HttpServletRequests.isApiRequest(req)) {
             res.sendError(HttpServletResponse.SC_UNAUTHORIZED);
         } else {
             super.commence(req, res, ex);

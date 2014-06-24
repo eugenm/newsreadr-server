@@ -6,8 +6,8 @@ import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 
-import de.patrickgotthard.newsreadr.server.persistence.entity.User;
-import de.patrickgotthard.newsreadr.server.util.ListUtil;
+import de.patrickgotthard.newsreadr.server.common.util.Lists;
+import de.patrickgotthard.newsreadr.server.users.User;
 import de.patrickgotthard.newsreadr.shared.response.data.Role;
 
 public class NewsreadrUserDetails implements UserDetails {
@@ -25,7 +25,7 @@ public class NewsreadrUserDetails implements UserDetails {
         username = user.getUsername();
         password = user.getPassword();
         role = user.getRole();
-        authorities = ListUtil.toList(new SimpleGrantedAuthority("ROLE_" + role.name()));
+        authorities = Lists.toList(new SimpleGrantedAuthority("ROLE_" + role.name()));
     }
 
     public long getUserId() {
