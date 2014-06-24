@@ -6,8 +6,8 @@ import org.springframework.web.bind.support.WebDataBinderFactory;
 import org.springframework.web.context.request.NativeWebRequest;
 import org.springframework.web.method.support.ModelAndViewContainer;
 
-import de.patrickgotthard.newsreadr.server.common.config.CustomArgumentResolver;
-import de.patrickgotthard.newsreadr.server.common.util.ParameterResolver;
+import de.patrickgotthard.newsreadr.server.common.CustomArgumentResolver;
+import de.patrickgotthard.newsreadr.server.common.util.RequestParameters;
 import de.patrickgotthard.newsreadr.shared.request.RemoveSubscriptionRequest;
 
 @Component
@@ -22,9 +22,7 @@ class RemoveSubscriptionRequestArgumentResolver implements CustomArgumentResolve
     public Object resolveArgument(final MethodParameter parameter, final ModelAndViewContainer mavContainer, final NativeWebRequest webRequest,
             final WebDataBinderFactory binderFactory) throws Exception {
 
-        final ParameterResolver resolver = new ParameterResolver(webRequest);
-
-        final Long subscriptionId = resolver.getLong("subscriptionId");
+        final Long subscriptionId = RequestParameters.getLong(webRequest, "subscriptionId");
 
         return new RemoveSubscriptionRequest(subscriptionId);
 

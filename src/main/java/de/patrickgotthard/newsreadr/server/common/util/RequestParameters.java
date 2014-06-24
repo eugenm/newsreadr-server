@@ -2,19 +2,16 @@ package de.patrickgotthard.newsreadr.server.common.util;
 
 import org.springframework.web.context.request.NativeWebRequest;
 
-public final class ParameterResolver {
+public final class RequestParameters {
 
-    private final NativeWebRequest request;
-
-    public ParameterResolver(final NativeWebRequest request) {
-        this.request = request;
+    private RequestParameters() {
     }
 
-    public String getString(final String paramName) {
+    public static String getString(final NativeWebRequest request, final String paramName) {
         return request.getParameter(paramName);
     }
 
-    public Boolean getBoolean(final String paramName) {
+    public static Boolean getBoolean(final NativeWebRequest request, final String paramName) {
         Boolean value = null;
         final String parameter = request.getParameter(paramName);
         if (parameter != null) {
@@ -23,7 +20,7 @@ public final class ParameterResolver {
         return value;
     }
 
-    public Integer getInteger(final String paramName) {
+    public static Integer getInteger(final NativeWebRequest request, final String paramName) {
         Integer value = null;
         final String parameter = request.getParameter(paramName);
         if (parameter != null) {
@@ -32,7 +29,7 @@ public final class ParameterResolver {
         return value;
     }
 
-    public Long getLong(final String paramName) {
+    public static Long getLong(final NativeWebRequest request, final String paramName) {
         Long value = null;
         final String parameter = request.getParameter(paramName);
         if (parameter != null) {
@@ -41,8 +38,8 @@ public final class ParameterResolver {
         return value;
     }
 
-    public <T extends Enum<T>> T getEnum(final String paramName, final Class<T> type) {
-        final String stringValue = getString(paramName);
+    public static <T extends Enum<T>> T getEnum(final NativeWebRequest request, final String paramName, final Class<T> type) {
+        final String stringValue = getString(request, paramName);
         T value = null;
         if (stringValue != null) {
             value = Enum.valueOf(type, stringValue);
