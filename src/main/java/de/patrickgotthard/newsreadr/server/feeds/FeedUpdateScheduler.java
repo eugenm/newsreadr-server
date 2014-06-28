@@ -50,13 +50,13 @@ class FeedUpdateScheduler {
     @Scheduled(initialDelay = 15_000, fixedDelay = 300_000)
     @Transactional
     void updateFeeds() {
-        LOG.debug("Updating feeds");
         final List<Feed> feedsToUpdate = feedRepository.findAll();
+        LOG.info("Updating {} feeds", feedsToUpdate.size());
         for (final Feed feed : feedsToUpdate) {
             final Long feedId = feed.getId();
             updateFeed(feedId);
         }
-        LOG.debug("Finished updating feeds");
+        LOG.info("Finished updating feeds");
     }
 
     /**
