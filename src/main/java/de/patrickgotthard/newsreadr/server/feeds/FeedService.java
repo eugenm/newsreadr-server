@@ -2,6 +2,7 @@ package de.patrickgotthard.newsreadr.server.feeds;
 
 import java.io.IOException;
 import java.net.URL;
+import java.net.URLConnection;
 import java.util.Collection;
 import java.util.Date;
 import java.util.LinkedHashSet;
@@ -31,6 +32,7 @@ import de.patrickgotthard.newsreadr.server.entries.Entry;
 public class FeedService {
 
     private static final Logger LOG = LoggerFactory.getLogger(FeedService.class);
+    private static final int THIRTY_SECONDS = 30_000;
 
     private final FeedRepository feedRepository;
 
@@ -41,12 +43,17 @@ public class FeedService {
 
     public Feed fetch(final String feedUrl) {
         try {
+
             System.setProperty("http.agent", "newsreadr");
-            final URL url = new URL(feedUrl);
-            final XmlReader reader = new XmlReader(url);
+
+            final URLConnection connection = new URL(feedUrl).openConnection();
+            connection.setReadTimeout(THIRTY_SECONDS);
+
+            final XmlReader reader = new XmlReader(connection);
             final SyndFeedInput input = new SyndFeedInput();
             final SyndFeed syndFeed = input.build(reader);
             return convertFeed(syndFeed, feedUrl);
+
         } catch (final IOException e) {
             throw ServiceException.withCauseAndMessage(e, "Unable to download feed: {}", feedUrl);
         } catch (final IllegalArgumentException e) {
