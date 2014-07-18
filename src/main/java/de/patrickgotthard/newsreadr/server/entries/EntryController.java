@@ -1,9 +1,9 @@
 package de.patrickgotthard.newsreadr.server.entries;
 
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
 
+import de.patrickgotthard.newsreadr.server.common.web.ApiController;
+import de.patrickgotthard.newsreadr.server.common.web.ApiRequestMapping;
 import de.patrickgotthard.newsreadr.shared.request.GetEntriesRequest;
 import de.patrickgotthard.newsreadr.shared.request.GetEntryRequest;
 import de.patrickgotthard.newsreadr.shared.request.MarkEntriesAsReadRequest;
@@ -11,8 +11,7 @@ import de.patrickgotthard.newsreadr.shared.response.GetEntriesResponse;
 import de.patrickgotthard.newsreadr.shared.response.GetEntryResponse;
 import de.patrickgotthard.newsreadr.shared.response.Response;
 
-@RestController
-@RequestMapping("/api")
+@ApiController
 class EntryController {
 
     private final EntryService entryService;
@@ -22,17 +21,17 @@ class EntryController {
         this.entryService = entryService;
     }
 
-    @RequestMapping(params = GetEntriesRequest.METHOD)
+    @ApiRequestMapping(GetEntriesRequest.class)
     GetEntriesResponse getEntries(final GetEntriesRequest request) {
         return entryService.getEntries(request);
     }
 
-    @RequestMapping(params = GetEntryRequest.METHOD)
+    @ApiRequestMapping(GetEntryRequest.class)
     GetEntryResponse getEntry(final GetEntryRequest request) {
         return entryService.getEntry(request);
     }
 
-    @RequestMapping(params = MarkEntriesAsReadRequest.METHOD)
+    @ApiRequestMapping(MarkEntriesAsReadRequest.class)
     Response markEntriesAsRead(final MarkEntriesAsReadRequest request) {
         return entryService.markEntriesAsRead(request);
     }

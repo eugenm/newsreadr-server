@@ -6,8 +6,8 @@ import org.springframework.web.bind.support.WebDataBinderFactory;
 import org.springframework.web.context.request.NativeWebRequest;
 import org.springframework.web.method.support.ModelAndViewContainer;
 
-import de.patrickgotthard.newsreadr.server.common.CustomArgumentResolver;
-import de.patrickgotthard.newsreadr.server.common.util.RequestParameters;
+import de.patrickgotthard.newsreadr.server.common.web.CustomArgumentResolver;
+import de.patrickgotthard.newsreadr.server.common.web.RequestParameters;
 import de.patrickgotthard.newsreadr.shared.request.AddBookmarkRequest;
 
 @Component

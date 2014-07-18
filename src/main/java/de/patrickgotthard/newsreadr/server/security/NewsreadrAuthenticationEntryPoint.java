@@ -10,7 +10,7 @@ import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.web.authentication.LoginUrlAuthenticationEntryPoint;
 import org.springframework.stereotype.Component;
 
-import de.patrickgotthard.newsreadr.server.common.util.HttpServletRequests;
+import de.patrickgotthard.newsreadr.server.common.web.HttpServletRequests;
 
 @Component
 public class NewsreadrAuthenticationEntryPoint extends LoginUrlAuthenticationEntryPoint {

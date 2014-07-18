@@ -1,14 +1,13 @@
 package de.patrickgotthard.newsreadr.server.infos;
 
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
 
+import de.patrickgotthard.newsreadr.server.common.web.ApiController;
+import de.patrickgotthard.newsreadr.server.common.web.ApiRequestMapping;
 import de.patrickgotthard.newsreadr.shared.request.GetInfosRequest;
 import de.patrickgotthard.newsreadr.shared.response.GetInfosResponse;
 
-@RestController
-@RequestMapping("/api")
+@ApiController
 class InfoController {
 
     private final InfoService infoService;
@@ -18,7 +17,7 @@ class InfoController {
         this.infoService = infoService;
     }
 
-    @RequestMapping(params = GetInfosRequest.METHOD)
+    @ApiRequestMapping(GetInfosRequest.class)
     GetInfosResponse getInfos() {
         return infoService.getInfos();
     }

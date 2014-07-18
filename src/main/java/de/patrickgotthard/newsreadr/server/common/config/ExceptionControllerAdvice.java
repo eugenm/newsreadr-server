@@ -1,6 +1,7 @@
 package de.patrickgotthard.newsreadr.server.common.config;
 
 import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -19,11 +20,12 @@ class ExceptionControllerAdvice {
 
     @ExceptionHandler(Exception.class)
     @ResponseBody
-    Response handleException(final HttpServletRequest request, final Exception e) {
+    Response handleException(final HttpServletRequest request, final HttpServletResponse response, final Exception e) {
         String message;
         if (e instanceof ServiceException) {
             message = e.getMessage();
         } else {
+            response.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
             LOG.error("An error occured while processing request", e);
             message = UNKNOWN_ERROR_MESSAGE;
         }

@@ -9,7 +9,7 @@ import javax.servlet.http.HttpServletRequest;
 
 import org.junit.Test;
 
-import de.patrickgotthard.newsreadr.server.common.util.HttpServletRequests;
+import de.patrickgotthard.newsreadr.server.common.web.HttpServletRequests;
 
 public class HttpServletRequestsTest {
 

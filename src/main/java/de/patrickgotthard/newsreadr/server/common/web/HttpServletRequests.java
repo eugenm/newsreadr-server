@@ -1,4 +1,4 @@
-package de.patrickgotthard.newsreadr.server.common.util;
+package de.patrickgotthard.newsreadr.server.common.web;
 
 import javax.servlet.http.HttpServletRequest;
 

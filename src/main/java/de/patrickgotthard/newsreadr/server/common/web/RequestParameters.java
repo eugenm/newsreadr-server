@@ -1,4 +1,4 @@
-package de.patrickgotthard.newsreadr.server.common.util;
+package de.patrickgotthard.newsreadr.server.common.web;
 
 import org.springframework.web.context.request.NativeWebRequest;
 

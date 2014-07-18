@@ -1,9 +1,9 @@
 package de.patrickgotthard.newsreadr.server.users;
 
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
 
+import de.patrickgotthard.newsreadr.server.common.web.ApiController;
+import de.patrickgotthard.newsreadr.server.common.web.ApiRequestMapping;
 import de.patrickgotthard.newsreadr.shared.request.AddUserRequest;
 import de.patrickgotthard.newsreadr.shared.request.GetUsersRequest;
 import de.patrickgotthard.newsreadr.shared.request.RemoveUserRequest;
@@ -11,8 +11,7 @@ import de.patrickgotthard.newsreadr.shared.request.UpdateUserRequest;
 import de.patrickgotthard.newsreadr.shared.response.GetUsersResponse;
 import de.patrickgotthard.newsreadr.shared.response.Response;
 
-@RestController
-@RequestMapping("/api")
+@ApiController
 class UserController {
 
     private final UserService userService;
@@ -22,22 +21,22 @@ class UserController {
         this.userService = userService;
     }
 
-    @RequestMapping(params = AddUserRequest.METHOD)
+    @ApiRequestMapping(AddUserRequest.class)
     Response addUser(final AddUserRequest request) {
         return userService.addUser(request);
     }
 
-    @RequestMapping(params = GetUsersRequest.METHOD)
+    @ApiRequestMapping(GetUsersRequest.class)
     GetUsersResponse getUsers() {
         return userService.getUsers();
     }
 
-    @RequestMapping(params = UpdateUserRequest.METHOD)
+    @ApiRequestMapping(UpdateUserRequest.class)
     Response updateUser(final UpdateUserRequest request) {
         return userService.updateUser(request);
     }
 
-    @RequestMapping(params = RemoveUserRequest.METHOD)
+    @ApiRequestMapping(RemoveUserRequest.class)
     Response removeUser(final RemoveUserRequest request) {
         return userService.removeUser(request);
     }

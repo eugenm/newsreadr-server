@@ -55,7 +55,7 @@ import de.patrickgotthard.newsreadr.shared.response.data.SubscriptionNode;
 import de.patrickgotthard.newsreadr.shared.response.data.VirtualNode;
 
 @Service
-class SubscriptionService {
+public class SubscriptionService {
 
     private static final Logger LOG = LoggerFactory.getLogger(SubscriptionService.class);
 
@@ -310,7 +310,7 @@ class SubscriptionService {
     }
 
     @Transactional
-    Response importSubscriptions(final MultipartFile opmlFile) {
+    public Response importSubscriptions(final MultipartFile opmlFile) {
 
         LOG.debug("Importing subscriptions: {}", opmlFile);
 
@@ -370,7 +370,7 @@ class SubscriptionService {
     }
 
     @Transactional(readOnly = true)
-    String exportSubscriptions() throws JAXBException {
+    public String exportSubscriptions() throws JAXBException {
 
         LOG.debug("Exporting subscriptions");
 

@@ -1,15 +1,14 @@
 package de.patrickgotthard.newsreadr.server.bookmarks;
 
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
 
+import de.patrickgotthard.newsreadr.server.common.web.ApiController;
+import de.patrickgotthard.newsreadr.server.common.web.ApiRequestMapping;
 import de.patrickgotthard.newsreadr.shared.request.AddBookmarkRequest;
 import de.patrickgotthard.newsreadr.shared.request.RemoveBookmarkRequest;
 import de.patrickgotthard.newsreadr.shared.response.Response;
 
-@RestController
-@RequestMapping("/api")
+@ApiController
 class BookmarkController {
 
     private final BookmarkService bookmarkService;
@@ -19,12 +18,12 @@ class BookmarkController {
         this.bookmarkService = bookmarkService;
     }
 
-    @RequestMapping(params = AddBookmarkRequest.METHOD)
+    @ApiRequestMapping(AddBookmarkRequest.class)
     Response addBookmark(final AddBookmarkRequest request) {
         return bookmarkService.addBookmark(request);
     }
 
-    @RequestMapping(params = RemoveBookmarkRequest.METHOD)
+    @ApiRequestMapping(RemoveBookmarkRequest.class)
     Response removeBookmark(final RemoveBookmarkRequest request) {
         return bookmarkService.removeBookmark(request);
     }

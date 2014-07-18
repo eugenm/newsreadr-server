@@ -1,4 +1,4 @@
-package de.patrickgotthard.newsreadr.server.common;
+package de.patrickgotthard.newsreadr.server.common.web;
 
 import org.springframework.web.method.support.HandlerMethodArgumentResolver;
 
