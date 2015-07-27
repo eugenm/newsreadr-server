@@ -6,22 +6,26 @@ import java.util.List;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.security.access.annotation.Secured;
 import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import de.patrickgotthard.newsreadr.server.common.exception.ServiceException;
-import de.patrickgotthard.newsreadr.server.common.util.Objects;
-import de.patrickgotthard.newsreadr.server.common.util.Strings;
-import de.patrickgotthard.newsreadr.server.security.SecurityService;
-import de.patrickgotthard.newsreadr.shared.request.AddUserRequest;
-import de.patrickgotthard.newsreadr.shared.request.RemoveUserRequest;
-import de.patrickgotthard.newsreadr.shared.request.UpdateUserRequest;
-import de.patrickgotthard.newsreadr.shared.response.GetUsersResponse;
-import de.patrickgotthard.newsreadr.shared.response.Response;
-import de.patrickgotthard.newsreadr.shared.response.data.Role;
-import de.patrickgotthard.newsreadr.shared.response.data.UserData;
+import com.mysema.query.types.expr.BooleanExpression;
+
+import de.patrickgotthard.newsreadr.server.common.persistence.entity.QUser;
+import de.patrickgotthard.newsreadr.server.common.persistence.entity.Role;
+import de.patrickgotthard.newsreadr.server.common.persistence.entity.User;
+import de.patrickgotthard.newsreadr.server.common.persistence.repository.UserRepository;
+import de.patrickgotthard.newsreadr.server.common.rest.AlreadyExistsException;
+import de.patrickgotthard.newsreadr.server.common.rest.NotAllowedException;
+import de.patrickgotthard.newsreadr.server.common.rest.NotFoundException;
+import de.patrickgotthard.newsreadr.server.common.util.ObjectUtil;
+import de.patrickgotthard.newsreadr.server.common.util.StringUtil;
+import de.patrickgotthard.newsreadr.server.users.request.AddUserRequest;
+import de.patrickgotthard.newsreadr.server.users.request.RemoveUserRequest;
+import de.patrickgotthard.newsreadr.server.users.request.UpdateUserRequest;
+import de.patrickgotthard.newsreadr.server.users.response.UserDTO;
 
 @Service
 class UserService {
@@ -29,103 +33,122 @@ class UserService {
     private static final Logger LOG = LoggerFactory.getLogger(UserService.class);
 
     private final UserRepository userRepository;
-    private final SecurityService securityService;
+    private final PasswordEncoder passwordEncoder;
 
     @Autowired
-    UserService(final UserRepository userRepository, final SecurityService securityService) {
+    public UserService(final UserRepository userRepository, final PasswordEncoder passwordEncoder) {
         this.userRepository = userRepository;
-        this.securityService = securityService;
+        this.passwordEncoder = passwordEncoder;
     }
 
-    @Secured("ROLE_ADMIN")
     @Transactional
-    Response addUser(final AddUserRequest request) {
+    public void addUser(final AddUserRequest request, final User currentUser) {
 
         LOG.debug("Adding user: {}", request);
 
+        if (!Role.ADMIN.equals(currentUser.getRole())) {
+            throw new NotAllowedException("You are not allowed to create users");
+        }
+
         final String username = request.getUsername();
-        final boolean userAlreadyExists = userRepository.countByUsername(username) != 0;
+        final BooleanExpression byUsername = QUser.user.username.eq(username);
+        final boolean userAlreadyExists = this.userRepository.count(byUsername) != 0;
 
         if (userAlreadyExists) {
 
-            throw ServiceException.withMessage("User '{}' already exists", username);
+            throw new AlreadyExistsException("User " + username + " already exists");
 
         } else {
 
-            final String password = securityService.encode(request.getPassword());
+            final String password = this.passwordEncoder.encode(request.getPassword());
             final Role role = request.getRole();
             final User user = new User.Builder().setUsername(username).setPassword(password).setRole(role).build();
-            userRepository.save(user);
+            this.userRepository.save(user);
 
             LOG.debug("Successfully added user: {}", request);
-            return Response.success();
 
         }
 
     }
 
-    @Secured("ROLE_ADMIN")
     @Transactional(readOnly = true)
-    GetUsersResponse getUsers() {
-        final List<User> users = userRepository.findAll();
-        final List<UserData> userList = new ArrayList<>();
-        for (final User user : users) {
+    public List<UserDTO> getUsers(final User currentUser) {
+
+        if (!Role.ADMIN.equals(currentUser.getRole())) {
+            throw new NotAllowedException("You are not allowed to view the user list");
+        }
+
+        final List<UserDTO> users = new ArrayList<>();
+        this.userRepository.findAll().forEach(user -> {
+
             final Long userId = user.getId();
             final String username = user.getUsername();
             final Role role = user.getRole();
-            userList.add(new UserData(userId, username, role));
-        }
-        return new GetUsersResponse(userList);
+
+            final UserDTO dto = new UserDTO();
+            dto.setUserId(userId);
+            dto.setUsername(username);
+            dto.setRole(role);
+
+            users.add(dto);
+
+        });
+        return users;
+
     }
 
     @Transactional
-    Response updateUser(final UpdateUserRequest request) {
+    public void updateUser(final UpdateUserRequest request, final User currentUser) {
 
         LOG.debug("Updating user: {}", request);
 
         final long userId = request.getUserId();
-        final long currentUserId = securityService.getCurrentUserId();
+        final long currentUserId = currentUser.getId();
 
-        final boolean changingOwnAccount = Objects.equals(userId, currentUserId);
+        final boolean changingOwnAccount = userId == currentUserId;
 
         // normal users can only update their own account
-        if (securityService.isCurrentUserNoAdmin() && !changingOwnAccount) {
-            throw ServiceException.withMessage("You are not allowed to edit accounts of other users");
+        if (!Role.ADMIN.equals(currentUser.getRole()) && !changingOwnAccount) {
+            throw new NotAllowedException("You are not allowed to update account of other users");
         }
 
-        final User user = userRepository.findOne(userId);
+        // load user
+        final User user = this.userRepository.findOne(userId);
         if (user == null) {
-            throw ServiceException.withMessage("User does not exist");
+            throw new NotFoundException("User does not exist");
         }
 
+        // check if new username is already in use
         final String oldUsername = user.getUsername();
         final String newUsername = request.getUsername();
-        if (Strings.isNotBlank(newUsername) && Strings.notEquals(oldUsername, newUsername)) {
-            final boolean usernameReserved = userRepository.countByUsername(newUsername) == 1;
+        if (StringUtil.isNotBlank(newUsername) && ObjectUtil.notEqual(oldUsername, newUsername)) {
+            final BooleanExpression byUsername = QUser.user.username.eq(newUsername);
+            final boolean usernameReserved = this.userRepository.count(byUsername) == 1;
             if (usernameReserved) {
-                throw ServiceException.withMessage("Username '{}' already exists", newUsername);
+                throw new AlreadyExistsException("User " + newUsername + " does already exist");
             }
         }
 
         final Role oldRole = user.getRole();
         final Role newRole = request.getRole();
-        final boolean degradeAdmin = Objects.equals(Role.ADMIN, oldRole) && Objects.equals(Role.USER, newRole);
+        final boolean degradeAdmin = Role.ADMIN.equals(oldRole) && !Role.ADMIN.equals(newRole);
 
         if (degradeAdmin) {
             // ensure that there is always an admin left
-            final boolean lastAdmin = userRepository.countByRole(Role.ADMIN) == 1;
+            final BooleanExpression admins = QUser.user.role.eq(Role.ADMIN);
+            final boolean lastAdmin = this.userRepository.count(admins) == 1;
             if (lastAdmin) {
-                throw ServiceException.withMessage("It is not allowed to degrade the last administrator");
+                throw new NotAllowedException("Not allowed to degrade the last admin");
             }
         }
 
-        if (Strings.isNotBlank(newUsername)) {
+        if (StringUtil.isNotBlank(newUsername)) {
             user.setUsername(newUsername);
         }
 
         final String newPassword = request.getPassword();
-        if (Strings.isNotBlank(newPassword)) {
-            final String password = securityService.encode(newPassword);
+        if (StringUtil.isNotBlank(newPassword)) {
+            final String password = this.passwordEncoder.encode(newPassword);
             user.setPassword(password);
         }
 
@@ -133,49 +156,47 @@ class UserService {
             user.setRole(newRole);
         }
 
-        userRepository.save(user);
+        this.userRepository.save(user);
 
         if (changingOwnAccount) {
             SecurityContextHolder.clearContext();
         }
 
         LOG.debug("Successfully updated user: {}", request);
-        return Response.success();
 
     }
 
     @Transactional
-    Response removeUser(final RemoveUserRequest request) {
+    public void removeUser(final RemoveUserRequest request, final User currentUser) {
 
         LOG.debug("Removing user: {}", request);
-
         final long userId = request.getUserId();
 
-        if (securityService.isCurrentUserNoAdmin()) {
+        if (!Role.ADMIN.equals(currentUser.getRole())) {
             // normal users can only delete their own account
-            final long currentUserId = securityService.getCurrentUserId();
-            if (Objects.notEquals(currentUserId, userId)) {
-                throw ServiceException.withMessage("You are not allowed to delete accounts of other users");
+            final long currentUserId = currentUser.getId();
+            if (currentUserId != userId) {
+                throw new NotAllowedException("You are not allowed to remove other users");
             }
         }
 
-        final User user = userRepository.findOne(userId);
+        final User user = this.userRepository.findOne(userId);
         if (user == null) {
-            throw ServiceException.withMessage("User does not exist");
+            throw new NotFoundException("User does not exist");
         }
 
-        if (Objects.equals(Role.ADMIN, user.getRole())) {
+        if (Role.ADMIN.equals(user.getRole())) {
             // ensure that there is always an admin left
-            final boolean lastAdmin = userRepository.countByRole(Role.ADMIN) == 1;
+            final BooleanExpression admins = QUser.user.role.eq(Role.ADMIN);
+            final boolean lastAdmin = this.userRepository.count(admins) == 1;
             if (lastAdmin) {
-                throw ServiceException.withMessage("The last administrator can't be removed");
+                throw new NotAllowedException("Not allowed to delete the last admin");
             }
         }
 
-        userRepository.delete(userId);
+        this.userRepository.delete(userId);
 
-        LOG.debug("Successfully deleted last admin: {}", request);
-        return Response.success();
+        LOG.debug("Successfully removed user: {}", request);
 
     }
 

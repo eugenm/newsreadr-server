@@ -7,22 +7,14 @@ newsreadrControllers.controller('UsersController', ['$scope', '$http',
 		$scope.roles = [];
 		
 		// load infos
-		$http.get('api', {
-			params: {
-				method: 'get_infos'
-			}
-		}).success(function(data) {
-			$scope.infos = data;
+		$http.get('api/infos').success(function(infos) {
+			$scope.infos = infos;
 		});
 		
 		// load users
 		$scope.loadUsers = function() {
-			$http.get('api', {
-				params: {
-					method: 'get_users'
-				}
-			}).success(function(response) {
-				$scope.users = response.users;
+			$http.get('api/users').success(function(users) {
+				$scope.users = users;
 			});
 		};
 		
@@ -30,12 +22,8 @@ newsreadrControllers.controller('UsersController', ['$scope', '$http',
 		
 		// load roles
 		$scope.loadRoles = function() {
-			$http.get('api', {
-				params: {
-					method: 'get_roles'
-				}
-			}).success(function(response) {
-				$scope.roles = response.roles;
+			$http.get('api/roles').success(function(roles) {
+				$scope.roles = roles;
 			});
 		};
 		
@@ -44,8 +32,9 @@ newsreadrControllers.controller('UsersController', ['$scope', '$http',
 		// add user
 		$scope.addUser = function() {
 			$scope.form = {
+				method: 'POST',
+				url: 'api/users',
 				windowTitle: 'Add user',
-				apiMethod: 'add_user',
 				role: 'USER'
 			};
 			$('#userDialog').modal('show');
@@ -54,8 +43,9 @@ newsreadrControllers.controller('UsersController', ['$scope', '$http',
 		// edit user
 		$scope.editUser = function(user) {
 			var copy = angular.copy(user);
+			copy.method = 'PUT';
+			copy.url = 'api/users/' + copy.userId;
 			copy.windowTitle = 'Edit user';
-			copy.apiMethod = 'update_user';
 			$scope.form = copy;
 			$('#userDialog').modal('show');
 		};
@@ -65,10 +55,10 @@ newsreadrControllers.controller('UsersController', ['$scope', '$http',
 			
 			var form = $scope.form;
 			
-			$http.get('api', {
+			$http({
+				method: form.method,
+				url: form.url,
 				params: {
-					method: form.apiMethod,
-					userId: form.userId,
 					username: form.username,
 					password: form.password,
 					role: form.role
@@ -83,12 +73,7 @@ newsreadrControllers.controller('UsersController', ['$scope', '$http',
 		};
 		
 		$scope.deleteUser = function(user) {
-			$http.get('api', {
-				params: {
-					method: 'remove_user',
-					userId: user.userId
-				}
-			}).success(function(response) {
+			$http.delete('api/users/' + user.userId).success(function() {
 				$scope.loadUsers();
 			});
 		};

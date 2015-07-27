@@ -6,15 +6,12 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.crypto.password.PasswordEncoder;
 
-import de.patrickgotthard.newsreadr.server.users.User;
-import de.patrickgotthard.newsreadr.server.users.UserRepository;
-import de.patrickgotthard.newsreadr.shared.response.data.Role;
+import de.patrickgotthard.newsreadr.server.common.persistence.entity.Role;
+import de.patrickgotthard.newsreadr.server.common.persistence.entity.User;
+import de.patrickgotthard.newsreadr.server.common.persistence.repository.UserRepository;
 
 @Configuration
 class Bootstrap {
-
-    private static final String INITIAL_USERNAME = "admin";
-    private static final String INITIAL_PASSWORD = "password";
 
     @Autowired
     private PasswordEncoder passwordEncoder;
@@ -24,13 +21,20 @@ class Bootstrap {
 
     @PostConstruct
     public void bootstrap() {
-        if (userRepository.count() == 0) {
+
+        if (this.userRepository.count() == 0) {
+
+            final String initialUsername = "admin";
+            final String initialPassword = "password";
+
             final User user = new User();
-            user.setUsername(INITIAL_USERNAME);
-            user.setPassword(passwordEncoder.encode(INITIAL_PASSWORD));
+            user.setUsername(initialUsername);
+            user.setPassword(this.passwordEncoder.encode(initialPassword));
             user.setRole(Role.ADMIN);
-            userRepository.save(user);
+            this.userRepository.save(user);
+
         }
+
     }
 
 }

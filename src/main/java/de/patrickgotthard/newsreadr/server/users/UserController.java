@@ -1,44 +1,49 @@
 package de.patrickgotthard.newsreadr.server.users;
 
+import java.util.List;
+
+import javax.validation.Valid;
+
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.RestController;
 
-import de.patrickgotthard.newsreadr.server.common.web.ApiController;
-import de.patrickgotthard.newsreadr.server.common.web.ApiRequestMapping;
-import de.patrickgotthard.newsreadr.shared.request.AddUserRequest;
-import de.patrickgotthard.newsreadr.shared.request.GetUsersRequest;
-import de.patrickgotthard.newsreadr.shared.request.RemoveUserRequest;
-import de.patrickgotthard.newsreadr.shared.request.UpdateUserRequest;
-import de.patrickgotthard.newsreadr.shared.response.GetUsersResponse;
-import de.patrickgotthard.newsreadr.shared.response.Response;
+import de.patrickgotthard.newsreadr.server.common.persistence.entity.User;
+import de.patrickgotthard.newsreadr.server.users.request.AddUserRequest;
+import de.patrickgotthard.newsreadr.server.users.request.RemoveUserRequest;
+import de.patrickgotthard.newsreadr.server.users.request.UpdateUserRequest;
+import de.patrickgotthard.newsreadr.server.users.response.UserDTO;
 
-@ApiController
+@RestController
+@RequestMapping("/api/users")
 class UserController {
 
     private final UserService userService;
 
     @Autowired
-    UserController(final UserService userService) {
+    public UserController(final UserService userService) {
         this.userService = userService;
     }
 
-    @ApiRequestMapping(AddUserRequest.class)
-    Response addUser(final AddUserRequest request) {
-        return userService.addUser(request);
+    @RequestMapping(method = RequestMethod.POST)
+    public void addUser(@Valid final AddUserRequest request, final User currentUser) {
+        this.userService.addUser(request, currentUser);
     }
 
-    @ApiRequestMapping(GetUsersRequest.class)
-    GetUsersResponse getUsers() {
-        return userService.getUsers();
+    @RequestMapping(method = RequestMethod.GET)
+    public List<UserDTO> getUsers(final User user) {
+        return this.userService.getUsers(user);
     }
 
-    @ApiRequestMapping(UpdateUserRequest.class)
-    Response updateUser(final UpdateUserRequest request) {
-        return userService.updateUser(request);
+    @RequestMapping(value = "/{userId}", method = RequestMethod.PUT)
+    public void updateUser(@Valid final UpdateUserRequest request, final User currentUser) {
+        this.userService.updateUser(request, currentUser);
     }
 
-    @ApiRequestMapping(RemoveUserRequest.class)
-    Response removeUser(final RemoveUserRequest request) {
-        return userService.removeUser(request);
+    @RequestMapping(value = "/{userId}", method = RequestMethod.DELETE)
+    public void removeUser(@Valid final RemoveUserRequest request, final User currentUser) {
+        this.userService.removeUser(request, currentUser);
     }
 
 }

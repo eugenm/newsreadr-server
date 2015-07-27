@@ -6,107 +6,111 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import de.patrickgotthard.newsreadr.server.common.exception.ServiceException;
+import com.mysema.query.BooleanBuilder;
+
+import de.patrickgotthard.newsreadr.server.common.persistence.entity.Folder;
+import de.patrickgotthard.newsreadr.server.common.persistence.entity.QFolder;
+import de.patrickgotthard.newsreadr.server.common.persistence.entity.User;
+import de.patrickgotthard.newsreadr.server.common.persistence.repository.FolderRepository;
+import de.patrickgotthard.newsreadr.server.common.rest.AlreadyExistsException;
+import de.patrickgotthard.newsreadr.server.common.rest.NotFoundException;
 import de.patrickgotthard.newsreadr.server.feeds.FeedService;
-import de.patrickgotthard.newsreadr.server.security.SecurityService;
-import de.patrickgotthard.newsreadr.server.users.User;
-import de.patrickgotthard.newsreadr.shared.request.AddFolderRequest;
-import de.patrickgotthard.newsreadr.shared.request.RemoveFolderRequest;
-import de.patrickgotthard.newsreadr.shared.request.UpdateFolderRequest;
-import de.patrickgotthard.newsreadr.shared.response.Response;
+import de.patrickgotthard.newsreadr.server.folders.request.AddFolderRequest;
+import de.patrickgotthard.newsreadr.server.folders.request.RemoveFolderRequest;
+import de.patrickgotthard.newsreadr.server.folders.request.UpdateFolderRequest;
 
 @Service
-public class FolderService {
+class FolderService {
 
     private static final Logger LOG = LoggerFactory.getLogger(FeedService.class);
 
     private final FolderRepository folderRepository;
     private final FeedService feedService;
-    private final SecurityService securityService;
 
     @Autowired
-    public FolderService(final FolderRepository folderRepository, final FeedService feedService, final SecurityService securityService) {
+    public FolderService(final FolderRepository folderRepository, final FeedService feedService) {
         this.folderRepository = folderRepository;
         this.feedService = feedService;
-        this.securityService = securityService;
     }
 
     @Transactional
-    public Response addFolder(final AddFolderRequest request) {
+    public void addFolder(final AddFolderRequest request, final User currentUser) {
 
         LOG.debug("Adding folder: {}", request);
-
-        final User currentUser = securityService.getCurrentUser();
         final String title = request.getTitle();
 
-        final boolean folderAlreadyExists = folderRepository.countByUserAndTitle(currentUser, title) > 0;
-        if (folderAlreadyExists) {
-            throw ServiceException.withMessage("Folder '{}' already exists", title);
+        final boolean folderExists = this.folderExists(title, currentUser);
+        if (folderExists) {
+            throw new AlreadyExistsException("The folder " + title + " does already exist");
         }
 
         final Folder folder = new Folder.Builder().setUser(currentUser).setTitle(title).build();
-        folderRepository.save(folder);
+        this.folderRepository.save(folder);
 
-        LOG.debug("Successfully added folder: {}", request);
-        return Response.success();
+        LOG.debug("Successfully added folder: {}", title);
 
     }
 
     @Transactional
-    public Response updateFolder(final UpdateFolderRequest request) {
+    public void updateFolder(final UpdateFolderRequest request, final User currentUser) {
 
         LOG.debug("Updating folder: {}", request);
 
-        final long folderId = request.getFolderId();
-        final Folder folder = folderRepository.findOne(folderId);
-
+        // load folder
+        final Folder folder = this.loadFolder(request.getFolderId(), currentUser);
         if (folder == null) {
-            throw ServiceException.withMessage("Folder could not be found");
+            throw new NotFoundException("Folder does not exist");
         }
 
-        if (securityService.notBelongsToUser(folder)) {
-            throw ServiceException.withMessage("The requested folder does not belong to the current user");
-        }
-
-        final User currentUser = securityService.getCurrentUser();
+        // check whether new folder name already exists
         final String newTitle = request.getTitle();
 
-        final boolean folderAlreadyExists = folderRepository.countByUserAndTitle(currentUser, newTitle) > 0;
+        final boolean folderAlreadyExists = this.folderExists(newTitle, currentUser);
         if (folderAlreadyExists) {
-            throw ServiceException.withMessage("Folder '{}' already exists", newTitle);
+            throw new AlreadyExistsException("The folder " + newTitle + " does already exist");
         }
 
+        // update title
         folder.setTitle(newTitle);
-        folderRepository.save(folder);
+        this.folderRepository.save(folder);
 
         LOG.debug("Successfully updated folder: {}", request);
-        return Response.success();
 
     }
 
     @Transactional
-    public Response removeFolder(final RemoveFolderRequest request) {
+    public void removeFolder(final RemoveFolderRequest request, final User currentUser) {
 
         LOG.debug("Deleting folder: {}", request);
 
-        final long folderId = request.getFolderId();
-        final Folder folder = folderRepository.findOne(folderId);
-
+        // load folder
+        final Folder folder = this.loadFolder(request.getFolderId(), currentUser);
         if (folder == null) {
-            throw ServiceException.withMessage("Folder could not be found");
+            throw new NotFoundException("Folder does not exist");
         }
 
-        if (securityService.notBelongsToUser(folder)) {
-            throw ServiceException.withMessage("The requested folder does not belong to the current user");
-        }
+        // delete folder
+        this.folderRepository.delete(folder);
 
-        folderRepository.delete(folder);
-
-        feedService.removeFeedsWithoutSubscribers();
+        // remove feeds without subscribers
+        this.feedService.removeFeedsWithoutSubscribers();
 
         LOG.debug("Successfully deleted folder: {}", request);
-        return Response.success();
 
+    }
+
+    private Folder loadFolder(final long folderId, final User currentUser) {
+        final BooleanBuilder filter = new BooleanBuilder();
+        filter.and(QFolder.folder.id.eq(folderId));
+        filter.and(QFolder.folder.user.eq(currentUser));
+        return this.folderRepository.findOne(filter);
+    }
+
+    private boolean folderExists(final String title, final User currentUser) {
+        final BooleanBuilder filter = new BooleanBuilder();
+        filter.and(QFolder.folder.user.eq(currentUser));
+        filter.and(QFolder.folder.title.eq(title));
+        return this.folderRepository.count(filter) > 0;
     }
 
 }

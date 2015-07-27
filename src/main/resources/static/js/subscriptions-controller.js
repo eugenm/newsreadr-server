@@ -7,22 +7,13 @@ newsreadrControllers.controller('SubscriptionsController', ['$scope', '$http',
 		$scope.subscriptions = [];
 		
 		// load infos
-		$http.get('api', {
-			params: {
-				method: 'get_infos'
-			}
-		}).success(function(response) {
-			$scope.infos = response.infos;
+		$http.get('api/infos').success(function(infos) {
+			$scope.infos = infos;
 		});
 	
 		// load subscriptions
 		$scope.loadSubscriptions = function() {
-			$http.get('api', {
-				params: {
-					method: 'get_subscriptions'
-				}
-			}).success(function(response) {
-				var nodes = response.nodes;
+			$http.get('api/subscriptions').success(function(nodes) {
 				$scope.nodes = [];
 				$scope.folders = [];
 				angular.forEach(nodes, function(node) {
@@ -43,7 +34,8 @@ newsreadrControllers.controller('SubscriptionsController', ['$scope', '$http',
 		$scope.addFolder = function() {
 			$scope.folderForm = {
 				windowTitle: 'Add folder',
-				apiMethod: 'add_folder'
+				method: 'POST',
+				url: 'api/folders'
 			};
 			$('#folderDialog').modal('show');
 		};
@@ -52,7 +44,8 @@ newsreadrControllers.controller('SubscriptionsController', ['$scope', '$http',
 		$scope.editFolder = function(folder) {
 			var copy = angular.copy(folder);
 			copy.windowTitle = 'Edit folder';
-			copy.apiMethod = 'update_folder';
+			copy.method = 'PUT';
+			copy.url = 'api/folders/' + folder.id;
 			$scope.folderForm = copy;
 			$('#folderDialog').modal('show');
 		};
@@ -62,10 +55,10 @@ newsreadrControllers.controller('SubscriptionsController', ['$scope', '$http',
 			
 			var form = $scope.folderForm;
 			
-			$http.get('api', {
+			$http({
+				method: form.method,
+				url: form.url,
 				params: {
-					method: form.apiMethod,
-					folderId: form.id,
 					title: form.title
 				}
 			}).success(function(response) {
@@ -79,12 +72,7 @@ newsreadrControllers.controller('SubscriptionsController', ['$scope', '$http',
 		
 		// delete folder
 		$scope.deleteFolder = function(folder) {
-			$http.get('api', {
-				params: {
-					method: 'remove_folder',
-					folderId: folder.id
-				}
-			}).success(function(response) {
+			$http.delete('api/folders/' + folder.id).success(function(response) {
 				$scope.loadSubscriptions();
 			});
 		};
@@ -93,7 +81,8 @@ newsreadrControllers.controller('SubscriptionsController', ['$scope', '$http',
 		$scope.addSubscription = function() {
 			$scope.subscriptionForm = {
 				windowTitle: 'Add subscription',
-				apiMethod: 'add_subscription'
+				method: 'POST',
+				apiUrl: 'api/subscriptions'
 			};
 			$('#subscriptionDialog').modal('show');
 		};
@@ -102,7 +91,8 @@ newsreadrControllers.controller('SubscriptionsController', ['$scope', '$http',
 		$scope.editSubscription = function(subscription) {
 			var copy = angular.copy(subscription);
 			copy.windowTitle = 'Edit subscription';
-			copy.apiMethod = 'update_subscription';
+			copy.method = 'PUT';
+			copy.apiUrl = 'api/subscriptions/' + subscription.id;
 			$scope.subscriptionForm = copy;
 			$('#subscriptionDialog').modal('show');
 		};
@@ -112,10 +102,10 @@ newsreadrControllers.controller('SubscriptionsController', ['$scope', '$http',
 			
 			var form = $scope.subscriptionForm;
 			
-			$http.get('api', {
+			$http({
+				method: form.method,
+				url: form.apiUrl,
 				params: {
-					method: form.apiMethod,
-					subscriptionId: form.id,
 					folderId: form.folderId,
 					url: form.url,
 					title: form.title
@@ -130,12 +120,7 @@ newsreadrControllers.controller('SubscriptionsController', ['$scope', '$http',
 		
 		// delete subscription
 		$scope.deleteSubscription = function(subscription) {
-			$http.get('api', {
-				params: {
-					method: 'remove_subscription',
-					subscriptionId: subscription.id
-				}
-			}).success(function(response) {
+			$http.delete('api/subscriptions/' + subscription.id).success(function(response) {
 				$scope.loadSubscriptions();
 			});
 		}
@@ -148,7 +133,7 @@ newsreadrControllers.controller('SubscriptionsController', ['$scope', '$http',
 		
 		// export subscriptions
 		$scope.exportSubscriptions = function() {
-			window.location.href = "export";
+			window.location.href = "api/subscriptions/export";
 		};
 		
 	}

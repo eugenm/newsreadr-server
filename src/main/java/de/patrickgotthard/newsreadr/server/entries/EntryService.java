@@ -1,8 +1,6 @@
 package de.patrickgotthard.newsreadr.server.entries;
 
 import java.util.List;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 import org.jsoup.Jsoup;
 import org.jsoup.safety.Whitelist;
@@ -14,163 +12,177 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.mysema.query.BooleanBuilder;
-import com.mysema.query.types.expr.BooleanExpression;
 
-import de.patrickgotthard.newsreadr.server.common.exception.ServiceException;
-import de.patrickgotthard.newsreadr.server.common.util.Assert;
-import de.patrickgotthard.newsreadr.server.security.SecurityService;
-import de.patrickgotthard.newsreadr.server.subscriptions.Subscription;
-import de.patrickgotthard.newsreadr.server.userentries.UserEntry;
-import de.patrickgotthard.newsreadr.server.userentries.UserEntryExpression;
-import de.patrickgotthard.newsreadr.server.userentries.UserEntryRepository;
-import de.patrickgotthard.newsreadr.shared.request.GetEntriesRequest;
-import de.patrickgotthard.newsreadr.shared.request.GetEntryRequest;
-import de.patrickgotthard.newsreadr.shared.request.MarkEntriesAsReadRequest;
-import de.patrickgotthard.newsreadr.shared.response.GetEntriesResponse;
-import de.patrickgotthard.newsreadr.shared.response.GetEntryResponse;
-import de.patrickgotthard.newsreadr.shared.response.Response;
-import de.patrickgotthard.newsreadr.shared.response.data.EntrySummary;
-import de.patrickgotthard.newsreadr.shared.response.data.Node;
+import de.patrickgotthard.newsreadr.server.common.persistence.entity.QUserEntry;
+import de.patrickgotthard.newsreadr.server.common.persistence.entity.User;
+import de.patrickgotthard.newsreadr.server.common.persistence.entity.UserEntry;
+import de.patrickgotthard.newsreadr.server.common.persistence.repository.UserEntryRepository;
+import de.patrickgotthard.newsreadr.server.common.rest.NotFoundException;
+import de.patrickgotthard.newsreadr.server.common.rest.ServerException;
+import de.patrickgotthard.newsreadr.server.entries.request.AddBookmarkRequest;
+import de.patrickgotthard.newsreadr.server.entries.request.GetEntriesRequest;
+import de.patrickgotthard.newsreadr.server.entries.request.GetEntryRequest;
+import de.patrickgotthard.newsreadr.server.entries.request.MarkEntriesAsReadRequest;
+import de.patrickgotthard.newsreadr.server.entries.request.RemoveBookmarkRequest;
+import de.patrickgotthard.newsreadr.server.entries.response.EntrySummary;
+import de.patrickgotthard.newsreadr.server.entries.response.GetEntriesResponse;
+import de.patrickgotthard.newsreadr.server.subscriptions.response.Node.Type;
 
 @Service
 class EntryService {
 
     private static final Logger LOG = LoggerFactory.getLogger(EntryService.class);
 
-    private static final String FEED_ALL = Node.Type.ALL.name();
-    private static final String FEED_BOOKMARKS = Node.Type.BOOKMARKS.name();
-    private static final String FOLDER_REGEX = Node.Type.FOLDER.name() + "-(\\d+)";
-    private static final String SUBSCRIPTION_REGEX = Node.Type.SUBSCRIPTION.name() + "-(\\d+)";
-
     private final UserEntryRepository userEntryRepository;
-    private final SecurityService securityService;
+    private final EntryDAO entryDAO;
 
     @Autowired
-    EntryService(final UserEntryRepository userEntryRepository, final SecurityService securityService) {
+    public EntryService(final UserEntryRepository userEntryRepository, final EntryDAO entryDAO) {
         this.userEntryRepository = userEntryRepository;
-        this.securityService = securityService;
+        this.entryDAO = entryDAO;
     }
 
     @Transactional(readOnly = true)
-    GetEntriesResponse getEntries(final GetEntriesRequest request) {
+    public GetEntriesResponse getEntries(final GetEntriesRequest request, final User currentUser) {
 
         LOG.debug("Getting entries: {}", request);
 
-        final long currentUserId = securityService.getCurrentUserId();
-        final BooleanExpression entryBelongsToUser = UserEntryExpression.belongsToUser(currentUserId);
+        final QUserEntry userEntry = QUserEntry.userEntry;
 
         final BooleanBuilder query = new BooleanBuilder();
-        query.and(entryBelongsToUser);
+        query.and(userEntry.subscription.user.eq(currentUser));
 
-        final String feed = request.getFeed();
-        if (FEED_ALL.equals(feed)) {
-            // no filter to apply
-        } else if (FEED_BOOKMARKS.equals(feed)) {
-            query.and(UserEntryExpression.isBookmarked());
-        } else if (Pattern.matches(SUBSCRIPTION_REGEX, feed)) {
-            final long subscriptionId = extractId(SUBSCRIPTION_REGEX, feed);
-            query.and(UserEntryExpression.belongsToSubscription(subscriptionId));
-        } else if (Pattern.matches(FOLDER_REGEX, feed)) {
-            final long folderId = extractId(FOLDER_REGEX, feed);
-            query.and(UserEntryExpression.belongsToFolder(folderId));
-        } else {
-            throw new IllegalArgumentException("Unknown feed: " + feed);
+        final Type type = request.getType();
+        switch (type) {
+            case ALL:
+                // no filter to apply
+                break;
+            case BOOKMARKS:
+                query.and(userEntry.bookmarked.isTrue());
+                break;
+            case FOLDER:
+                query.and(userEntry.subscription.folder.id.eq(request.getId()));
+                break;
+            case SUBSCRIPTION:
+                query.and(userEntry.subscription.id.eq(request.getId()));
+                break;
+            default:
+                throw new ServerException("Unknown feed type: " + type);
         }
 
         final Long latestEntryId = request.getLatestEntryId();
         if (latestEntryId != null) {
-            query.and(UserEntryExpression.idIsLowerThanOrEqualTo(latestEntryId));
+            query.and(userEntry.id.loe(latestEntryId));
         }
 
-        final boolean unreadOnly = request.isUnreadOnly();
+        final boolean unreadOnly = request.getUnreadOnly();
         if (unreadOnly) {
-            query.and(UserEntryExpression.isUnread());
+            query.and(userEntry.read.isFalse());
         }
+
+        final Long newLatestEntry = this.entryDAO.getLatestEntryId(currentUser);
 
         final int page = request.getPage();
         final PageRequest pageRequest = new PageRequest(page, 50);
+        final List<EntrySummary> entries = this.entryDAO.findEntries(query, pageRequest);
 
-        final Long newLatestEntry = userEntryRepository.getLatestEntryId(entryBelongsToUser);
-
-        final List<EntrySummary> entries = userEntryRepository.findEntries(query, pageRequest);
-
-        return new GetEntriesResponse(newLatestEntry, entries);
+        final GetEntriesResponse response = new GetEntriesResponse();
+        response.setLatestEntryId(newLatestEntry);
+        response.setEntries(entries);
+        return response;
 
     }
 
     @Transactional
-    GetEntryResponse getEntry(final GetEntryRequest request) {
+    public String getEntry(final GetEntryRequest request, final User currentUser) {
 
         LOG.debug("Getting entry: {}", request);
 
-        final long userEntryId = request.getUserEntryId();
-        final UserEntry userEntry = userEntryRepository.findOne(userEntryId);
-        Assert.notNull(userEntry);
+        final BooleanBuilder filter = new BooleanBuilder();
+        filter.and(QUserEntry.userEntry.id.eq(request.getUserEntryId()));
+        filter.and(QUserEntry.userEntry.subscription.user.eq(currentUser));
 
-        final Subscription subscription = userEntry.getSubscription();
-        if (subscription == null) {
-            throw ServiceException.withMessage("Subscription cannot be found");
-        }
-
-        if (securityService.notBelongsToUser(subscription)) {
-            throw ServiceException.withMessage("You are not subscribing the feed the entry belongs to");
+        final UserEntry userEntry = this.userEntryRepository.findOne(filter);
+        if (userEntry == null) {
+            throw new NotFoundException("The requested entry does not exist");
         }
 
         // mark as read
         userEntry.setRead(true);
-        userEntryRepository.save(userEntry);
+        this.userEntryRepository.save(userEntry);
 
-        final String rawContent = userEntry.getEntry().getContent();
+        final String content = userEntry.getEntry().getContent();
 
         final Whitelist whitelist = Whitelist.relaxed();
         whitelist.addTags("figure", "figcaption");
-        final String content = Jsoup.clean(rawContent, whitelist);
-
-        return new GetEntryResponse(content);
+        return Jsoup.clean(content, whitelist);
 
     }
 
     @Transactional
-    Response markEntriesAsRead(final MarkEntriesAsReadRequest request) {
+    public void markEntriesAsRead(final MarkEntriesAsReadRequest request, final User currentUser) {
 
         LOG.debug("Marking entries as read: {}", request);
 
-        final long currentUserId = securityService.getCurrentUserId();
-        final String feed = request.getFeed();
-        final long latestEntryId = request.getLatestEntryId();
+        final QUserEntry userEntry = QUserEntry.userEntry;
 
         final BooleanBuilder query = new BooleanBuilder();
-        query.and(UserEntryExpression.belongsToUser(currentUserId));
-        query.and(UserEntryExpression.isUnread());
-        query.and(UserEntryExpression.idIsLowerThanOrEqualTo(latestEntryId));
+        query.and(userEntry.subscription.user.eq(currentUser));
+        query.and(userEntry.read.isFalse());
+        query.and(userEntry.id.loe(request.getLatestEntryId()));
 
-        if (FEED_ALL.equals(feed)) {
-            // no filter to apply
-        } else if (FEED_BOOKMARKS.equals(feed)) {
-            query.and(UserEntryExpression.isBookmarked());
-        } else if (Pattern.matches(SUBSCRIPTION_REGEX, feed)) {
-            final long subscriptionId = extractId(SUBSCRIPTION_REGEX, feed);
-            query.and(UserEntryExpression.belongsToSubscription(subscriptionId));
-        } else if (Pattern.matches(FOLDER_REGEX, feed)) {
-            final long folderId = extractId(FOLDER_REGEX, feed);
-            query.and(UserEntryExpression.belongsToFolder(folderId));
+        final Type type = request.getType();
+        switch (type) {
+            case ALL:
+                // no filter to apply
+                break;
+            case BOOKMARKS:
+                query.and(userEntry.bookmarked.isTrue());
+                break;
+            case FOLDER:
+                query.and(userEntry.subscription.folder.id.eq(request.getId()));
+                break;
+            case SUBSCRIPTION:
+                query.and(userEntry.subscription.id.eq(request.getId()));
+                break;
+            default:
+                throw new ServerException("Unknown feed type: " + type);
+        }
+
+        final List<UserEntry> entries = this.userEntryRepository.findAll(query);
+        for (final UserEntry entry : entries) {
+            entry.setRead(true);
+        }
+        this.userEntryRepository.save(entries);
+
+    }
+
+    @Transactional
+    public void addBookmark(final AddBookmarkRequest request, final User currentUser) {
+        final long userEntryId = request.getUserEntryId();
+        this.toggleBookmark(userEntryId, true, currentUser);
+    }
+
+    @Transactional
+    public void removeBookmark(final RemoveBookmarkRequest request, final User currentUser) {
+        final long userEntryId = request.getUserEntryId();
+        this.toggleBookmark(userEntryId, false, currentUser);
+    }
+
+    private void toggleBookmark(final long userEntryId, final boolean bookmark, final User currentUser) {
+
+        final BooleanBuilder filter = new BooleanBuilder();
+        filter.and(QUserEntry.userEntry.id.eq(userEntryId));
+        filter.and(QUserEntry.userEntry.subscription.user.eq(currentUser));
+
+        final UserEntry userEntry = this.userEntryRepository.findOne(filter);
+        if (userEntry == null) {
+            throw new NotFoundException("The requested entry does not exist");
         } else {
-            throw ServiceException.withMessage("Unknown feed: {}", feed);
+            userEntry.setBookmarked(bookmark);
+            this.userEntryRepository.save(userEntry);
         }
-
-        final List<UserEntry> entries = userEntryRepository.findAll(query);
-        if (!entries.isEmpty()) {
-            userEntryRepository.markEntriesAsRead(entries);
-        }
-
-        return Response.success();
 
     }
 
-    private long extractId(final String regex, final String feed) {
-        final Matcher matcher = Pattern.compile(regex).matcher(feed);
-        matcher.find();
-        final String idString = matcher.group(1);
-        return Long.parseLong(idString);
-    }
 }

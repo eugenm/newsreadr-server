@@ -8,11 +8,7 @@ newsreadrControllers.controller('AccountController', ['$scope', '$http',
 		$scope.verifyPassword = null;
 		
 		// load infos
-		$http.get('api', {
-			params: {
-				method: 'get_infos'
-			}
-		}).success(function(response) {
+		$http.get('api/infos').success(function(response) {
 			$scope.userId = response.userId;
 			$scope.username = response.username;
 		});
@@ -20,17 +16,13 @@ newsreadrControllers.controller('AccountController', ['$scope', '$http',
 		// update accout
 		$scope.updateAccount = function() {
 			if($scope.newPassword == $scope.verifyPassword) {
-				$http.get('api', {
+				$http.put('api/users/' + $scope.userId, {
 					params: {
-						method: 'update_user',
-						userId: $scope.userId,
 						username: $scope.username,
 						password: $scope.newPassword
 					}
 				}).success(function(response) {
-					if(response.success) {
-						window.location.replace('login?newCredentials');
-					}
+					window.location.replace('login?newCredentials');
 				});
 			}
 		};

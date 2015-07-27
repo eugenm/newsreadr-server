@@ -3,3 +3,4 @@
 /.settings
 /target
 /application.yml
+/application.properties

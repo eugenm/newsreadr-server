@@ -3,7 +3,8 @@ newsreadrControllers.controller('EntriesController', ['$scope', '$http', '$ancho
     function ($scope, $http, $anchorScroll) {
 	
 		// entry filter
-		$scope.feed = 'ALL';
+		$scope.type = 'ALL';
+		$scope.id = null;
 		$scope.latestEntryId = null;
 		$scope.unreadOnly = true;
 		$scope.page = 0;
@@ -22,12 +23,7 @@ newsreadrControllers.controller('EntriesController', ['$scope', '$http', '$ancho
 		
 		// load subscriptions
 		$scope.loadSubscriptions = function() {
-			$http.get('api', {
-				params: {
-					method: 'get_subscriptions'
-				}
-			}).success(function(response) {
-				var nodes = response.nodes;
+			$http.get('api/subscriptions').success(function(nodes) {
 				$scope.nodes = nodes;
 				angular.forEach(nodes, function(node) {
 					var nodeType = node.type;
@@ -55,10 +51,10 @@ newsreadrControllers.controller('EntriesController', ['$scope', '$http', '$ancho
 			if($scope.page == 0) {
 			    $anchorScroll();
 			}
-			$http.get('api', {
+			$http.get('api/entries', {
 				params: {
-					method: 'get_entries',
-					feed: $scope.feed,
+					type: $scope.type,
+					id: $scope.id,
 					latestEntryId: $scope.latestEntryId,
 					unreadOnly: $scope.unreadOnly,
 					page: $scope.page
@@ -77,8 +73,9 @@ newsreadrControllers.controller('EntriesController', ['$scope', '$http', '$ancho
 		$scope.loadEntries();
 		
 		// change feed
-		$scope.changeFeed = function(feed) {
-			$scope.feed = feed;
+		$scope.changeFeed = function(node) {
+			$scope.type = node.type;
+			$scope.id = node.id;
 			$scope.page = 0;
 			$scope.loadEntries();
 		};
@@ -97,10 +94,12 @@ newsreadrControllers.controller('EntriesController', ['$scope', '$http', '$ancho
 		
 		// mark entries as read
 		$scope.markEntriesAsRead = function() {
-			$http.get('api', {
+			$http({
+				method: 'PUT',
+				url: 'api/entries/markRead',
 				params: {
-					method: 'mark_entries_as_read',
-					feed: $scope.feed,
+					type: $scope.type,
+					id: $scope.id,
 					latestEntryId: $scope.latestEntryId
 				}
 			}).success(function(response) {
@@ -117,12 +116,9 @@ newsreadrControllers.controller('EntriesController', ['$scope', '$http', '$ancho
 		
 		// toggle bookmark
 		$scope.toggleBookmark = function(entry) {
-			var method = entry.bookmarked ? 'remove_bookmark' : 'add_bookmark';
-			$http.get('api', {
-				params: {
-					method: method,
-					userEntryId: entry.id
-				}
+			$http({
+				method: entry.bookmarked ? 'DELETE' : 'POST',
+				url: 'api/entries/' + entry.id + '/bookmark'
 			}).success(function(response) {
 				entry.bookmarked = !entry.bookmarked;
 				if(!entry.read) {
@@ -139,12 +135,7 @@ newsreadrControllers.controller('EntriesController', ['$scope', '$http', '$ancho
 		$scope.toggleEntry = function(entry) {
 			entry.visible = !entry.visible; 
 			if(!entry.content) {
-				$http.get('api', {
-					params: {
-						method: 'get_entry',
-						userEntryId: entry.id
-					}
-				}).success(function(response) {
+				$http.get('api/entries/' + entry.id).success(function(content) {
 					if(!entry.read) {
 						$scope.allEntry.unread--;
 						if(entry.bookmarked) {
@@ -152,7 +143,7 @@ newsreadrControllers.controller('EntriesController', ['$scope', '$http', '$ancho
 						}
 					}
 					entry.read = true;
-					entry.content = response.content;
+					entry.content = content;
 				});
 			}
 		};
