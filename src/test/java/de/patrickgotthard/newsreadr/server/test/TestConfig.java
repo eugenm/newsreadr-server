@@ -28,8 +28,8 @@ public class TestConfig {
 
     @Bean
     public DatabaseDataSourceConnectionFactoryBean dbUnitDatabaseConnection() {
-        final DatabaseDataSourceConnectionFactoryBean bean = new DatabaseDataSourceConnectionFactoryBean(dataSource());
-        bean.setDatabaseConfig(dbUnitDatabaseConfig());
+        final DatabaseDataSourceConnectionFactoryBean bean = new DatabaseDataSourceConnectionFactoryBean(this.dataSource());
+        bean.setDatabaseConfig(this.dbUnitDatabaseConfig());
         return bean;
     }
 

@@ -6,29 +6,31 @@ import static org.junit.Assert.assertThat;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
+import java.util.List;
+
 import org.junit.Before;
 import org.junit.Test;
+import org.springframework.security.crypto.password.PasswordEncoder;
 
-import de.patrickgotthard.newsreadr.server.security.SecurityService;
-import de.patrickgotthard.newsreadr.server.users.User;
-import de.patrickgotthard.newsreadr.server.users.UserRepository;
-import de.patrickgotthard.newsreadr.shared.request.AddUserRequest;
-import de.patrickgotthard.newsreadr.shared.request.RemoveUserRequest;
-import de.patrickgotthard.newsreadr.shared.request.UpdateUserRequest;
-import de.patrickgotthard.newsreadr.shared.response.GetUsersResponse;
-import de.patrickgotthard.newsreadr.shared.response.data.Role;
+import de.patrickgotthard.newsreadr.server.common.persistence.entity.Role;
+import de.patrickgotthard.newsreadr.server.common.persistence.entity.User;
+import de.patrickgotthard.newsreadr.server.common.persistence.repository.UserRepository;
+import de.patrickgotthard.newsreadr.server.users.request.AddUserRequest;
+import de.patrickgotthard.newsreadr.server.users.request.RemoveUserRequest;
+import de.patrickgotthard.newsreadr.server.users.request.UpdateUserRequest;
+import de.patrickgotthard.newsreadr.server.users.response.UserDTO;
 
 public class UserServiceTest {
 
     private UserRepository userRepository;
-    private SecurityService securityService;
+    private PasswordEncoder passwordEncoder;
     private UserService userService;
 
     @Before
     public void setup() {
-        userRepository = mock(UserRepository.class);
-        securityService = mock(SecurityService.class);
-        userService = new UserService(userRepository, securityService);
+        this.userRepository = mock(UserRepository.class);
+        this.passwordEncoder = mock(PasswordEncoder.class);
+        this.userService = new UserService(this.userRepository, this.passwordEncoder);
     }
 
     @Test
@@ -37,17 +39,24 @@ public class UserServiceTest {
         final String username = "username";
         final String password = "password";
         final Role role = Role.USER;
+        final AddUserRequest request = new AddUserRequest.Builder().setUsername(username).setPassword(password).setRole(role).build();
 
-        final AddUserRequest request = new AddUserRequest(username, password, role);
-        userService.addUser(request);
+        final User admin = new User();
+        admin.setRole(Role.ADMIN);
+
+        this.userService.addUser(request, admin);
 
     }
 
     @Test
     public void testGetUsers() {
-        final GetUsersResponse response = userService.getUsers();
-        assertThat(response.getSuccess(), is(true));
-        assertThat(response.getUsers(), is(notNullValue()));
+
+        final User admin = new User();
+        admin.setRole(Role.ADMIN);
+
+        final List<UserDTO> users = this.userService.getUsers(admin);
+        assertThat(users, is(notNullValue()));
+
     }
 
     @Test
@@ -57,13 +66,16 @@ public class UserServiceTest {
         final String username = "username";
         final String password = "password";
         final Role role = Role.USER;
+
         final User user = new User();
 
-        when(securityService.isCurrentUserAdmin()).thenReturn(true);
-        when(userRepository.findOne(1l)).thenReturn(user);
+        final User currentUser = new User();
+        currentUser.setId(userId);
 
-        final UpdateUserRequest request = new UpdateUserRequest(userId, username, password, role);
-        userService.updateUser(request);
+        when(this.userRepository.findOne(1l)).thenReturn(user);
+
+        final UpdateUserRequest request = new UpdateUserRequest.Builder().setUserId(userId).setUsername(username).setPassword(password).setRole(role).build();
+        this.userService.updateUser(request, currentUser);
 
     }
 
@@ -73,10 +85,15 @@ public class UserServiceTest {
         final long userId = 1l;
         final User user = new User();
 
-        when(securityService.isCurrentUserAdmin()).thenReturn(true);
-        when(userRepository.findOne(1l)).thenReturn(user);
+        final User currentUser = new User();
+        currentUser.setId(userId);
 
-        userService.removeUser(new RemoveUserRequest(userId));
+        final RemoveUserRequest request = new RemoveUserRequest();
+        request.setUserId(userId);
+
+        when(this.userRepository.findOne(1l)).thenReturn(user);
+
+        this.userService.removeUser(request, currentUser);
 
     }
 

@@ -1,37 +1,41 @@
 package de.patrickgotthard.newsreadr.server.folders;
 
+import javax.validation.Valid;
+
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.RestController;
 
-import de.patrickgotthard.newsreadr.server.common.web.ApiController;
-import de.patrickgotthard.newsreadr.server.common.web.ApiRequestMapping;
-import de.patrickgotthard.newsreadr.shared.request.AddFolderRequest;
-import de.patrickgotthard.newsreadr.shared.request.RemoveFolderRequest;
-import de.patrickgotthard.newsreadr.shared.request.UpdateFolderRequest;
-import de.patrickgotthard.newsreadr.shared.response.Response;
+import de.patrickgotthard.newsreadr.server.common.persistence.entity.User;
+import de.patrickgotthard.newsreadr.server.folders.request.AddFolderRequest;
+import de.patrickgotthard.newsreadr.server.folders.request.RemoveFolderRequest;
+import de.patrickgotthard.newsreadr.server.folders.request.UpdateFolderRequest;
 
-@ApiController
+@RestController
+@RequestMapping("/api/folders")
 class FolderController {
 
     private final FolderService folderService;
 
     @Autowired
-    FolderController(final FolderService folderService) {
+    public FolderController(final FolderService folderService) {
         this.folderService = folderService;
     }
 
-    @ApiRequestMapping(AddFolderRequest.class)
-    Response addFolder(final AddFolderRequest request) {
-        return folderService.addFolder(request);
+    @RequestMapping(method = RequestMethod.POST)
+    public void addFolder(@Valid final AddFolderRequest request, final User currentUser) {
+        this.folderService.addFolder(request, currentUser);
     }
 
-    @ApiRequestMapping(UpdateFolderRequest.class)
-    Response updateFolder(final UpdateFolderRequest request) {
-        return folderService.updateFolder(request);
+    @RequestMapping(value = "/{folderId}", method = RequestMethod.PUT)
+    public void updateFolder(@Valid final UpdateFolderRequest request, final User currentUser) {
+        this.folderService.updateFolder(request, currentUser);
     }
 
-    @ApiRequestMapping(RemoveFolderRequest.class)
-    Response removeFolder(final RemoveFolderRequest request) {
-        return folderService.removeFolder(request);
+    @RequestMapping(value = "/{folderId}", method = RequestMethod.DELETE)
+    public void removeFolder(@Valid final RemoveFolderRequest request, final User currentUser) {
+        this.folderService.removeFolder(request, currentUser);
     }
 
 }

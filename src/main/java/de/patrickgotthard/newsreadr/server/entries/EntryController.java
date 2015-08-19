@@ -1,39 +1,54 @@
 package de.patrickgotthard.newsreadr.server.entries;
 
+import javax.validation.Valid;
+
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.RestController;
 
-import de.patrickgotthard.newsreadr.server.common.web.ApiController;
-import de.patrickgotthard.newsreadr.server.common.web.ApiRequestMapping;
-import de.patrickgotthard.newsreadr.shared.request.GetEntriesRequest;
-import de.patrickgotthard.newsreadr.shared.request.GetEntryRequest;
-import de.patrickgotthard.newsreadr.shared.request.MarkEntriesAsReadRequest;
-import de.patrickgotthard.newsreadr.shared.response.GetEntriesResponse;
-import de.patrickgotthard.newsreadr.shared.response.GetEntryResponse;
-import de.patrickgotthard.newsreadr.shared.response.Response;
+import de.patrickgotthard.newsreadr.server.common.persistence.entity.User;
+import de.patrickgotthard.newsreadr.server.entries.request.AddBookmarkRequest;
+import de.patrickgotthard.newsreadr.server.entries.request.GetEntriesRequest;
+import de.patrickgotthard.newsreadr.server.entries.request.GetEntryRequest;
+import de.patrickgotthard.newsreadr.server.entries.request.MarkEntriesAsReadRequest;
+import de.patrickgotthard.newsreadr.server.entries.request.RemoveBookmarkRequest;
+import de.patrickgotthard.newsreadr.server.entries.response.GetEntriesResponse;
 
-@ApiController
+@RestController
+@RequestMapping("/api/entries")
 class EntryController {
 
     private final EntryService entryService;
 
     @Autowired
-    EntryController(final EntryService entryService) {
+    public EntryController(final EntryService entryService) {
         this.entryService = entryService;
     }
 
-    @ApiRequestMapping(GetEntriesRequest.class)
-    GetEntriesResponse getEntries(final GetEntriesRequest request) {
-        return entryService.getEntries(request);
+    @RequestMapping(method = RequestMethod.GET)
+    public GetEntriesResponse getEntries(@Valid final GetEntriesRequest request, final User currentUser) {
+        return this.entryService.getEntries(request, currentUser);
     }
 
-    @ApiRequestMapping(GetEntryRequest.class)
-    GetEntryResponse getEntry(final GetEntryRequest request) {
-        return entryService.getEntry(request);
+    @RequestMapping(value = "/{userEntryId}", method = RequestMethod.GET)
+    public String getEntry(@Valid final GetEntryRequest request, final User currentUser) {
+        return this.entryService.getEntry(request, currentUser);
     }
 
-    @ApiRequestMapping(MarkEntriesAsReadRequest.class)
-    Response markEntriesAsRead(final MarkEntriesAsReadRequest request) {
-        return entryService.markEntriesAsRead(request);
+    @RequestMapping(value = "/markRead", method = RequestMethod.PUT)
+    public void markEntriesAsRead(@Valid final MarkEntriesAsReadRequest request, final User currentUser) {
+        this.entryService.markEntriesAsRead(request, currentUser);
+    }
+
+    @RequestMapping(value = "/{userEntryId}/bookmark", method = RequestMethod.POST)
+    public void addBookmark(@Valid final AddBookmarkRequest request, final User currentUser) {
+        this.entryService.addBookmark(request, currentUser);
+    }
+
+    @RequestMapping(value = "/{userEntryId}/bookmark", method = RequestMethod.DELETE)
+    public void removeBookmark(@Valid final RemoveBookmarkRequest request, final User currentUser) {
+        this.entryService.removeBookmark(request, currentUser);
     }
 
 }

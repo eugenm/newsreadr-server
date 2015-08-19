@@ -1,25 +1,18 @@
 package de.patrickgotthard.newsreadr.server.roles;
 
-import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.RestController;
 
-import de.patrickgotthard.newsreadr.server.common.web.ApiController;
-import de.patrickgotthard.newsreadr.server.common.web.ApiRequestMapping;
-import de.patrickgotthard.newsreadr.shared.request.GetRolesRequest;
-import de.patrickgotthard.newsreadr.shared.response.GetRolesResponse;
+import de.patrickgotthard.newsreadr.server.common.persistence.entity.Role;
 
-@ApiController
+@RestController
+@RequestMapping("/api/roles")
 class RoleController {
 
-    private final RoleService roleService;
-
-    @Autowired
-    RoleController(final RoleService roleService) {
-        this.roleService = roleService;
-    }
-
-    @ApiRequestMapping(GetRolesRequest.class)
-    GetRolesResponse getRoles() {
-        return roleService.getRoles();
+    @RequestMapping(method = RequestMethod.GET)
+    public Role[] getRoles() {
+        return Role.values();
     }
 
 }

@@ -1,2 +1,0 @@
-liquibase:
-    change-log: classpath:/liquibase/changelog-master.xml

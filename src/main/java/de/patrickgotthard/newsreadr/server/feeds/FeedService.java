@@ -24,9 +24,12 @@ import com.rometools.rome.io.FeedException;
 import com.rometools.rome.io.SyndFeedInput;
 import com.rometools.rome.io.XmlReader;
 
-import de.patrickgotthard.newsreadr.server.common.exception.ServiceException;
-import de.patrickgotthard.newsreadr.server.common.util.Strings;
-import de.patrickgotthard.newsreadr.server.entries.Entry;
+import de.patrickgotthard.newsreadr.server.common.persistence.entity.Entry;
+import de.patrickgotthard.newsreadr.server.common.persistence.entity.Feed;
+import de.patrickgotthard.newsreadr.server.common.persistence.entity.QFeed;
+import de.patrickgotthard.newsreadr.server.common.persistence.repository.FeedRepository;
+import de.patrickgotthard.newsreadr.server.common.rest.ServerException;
+import de.patrickgotthard.newsreadr.server.common.util.StringUtil;
 
 @Service
 public class FeedService {
@@ -54,31 +57,25 @@ public class FeedService {
             final SyndFeed syndFeed = input.build(reader);
             return convertFeed(syndFeed, feedUrl);
 
-        } catch (final IOException e) {
-            throw ServiceException.withCauseAndMessage(e, "Unable to download feed: {}", feedUrl);
-        } catch (final IllegalArgumentException e) {
-            throw ServiceException.withCauseAndMessage(e, "Unsupported feed type: {}", feedUrl);
-        } catch (final FeedException e) {
-            throw ServiceException.withCauseAndMessage(e, "An error occured while parsing the feed: {}", feedUrl);
+        } catch (final IOException | IllegalArgumentException | FeedException e) {
+            throw new ServerException(e);
         }
     }
 
     @Transactional(propagation = Propagation.MANDATORY)
     public void removeFeedsWithoutSubscribers() {
         LOG.debug("Removing feed without subscribers");
-        final BooleanExpression unused = FeedExpression.isUnused();
-        final List<Feed> unusedFeeds = feedRepository.findAll(unused);
-        feedRepository.delete(unusedFeeds);
+        final BooleanExpression unused = QFeed.feed.subscriptions.isEmpty();
+        final List<Feed> unusedFeeds = this.feedRepository.findAll(unused);
+        this.feedRepository.delete(unusedFeeds);
         LOG.debug("Removed {} feeds without subscribers", unusedFeeds.size());
     }
 
     /**
      * Converts a {@link SyndFeed} into a {@link Feed} object.
      *
-     * @param syndFeed
-     *            The {@link SyndFeed} to convert
-     * @param feedUrl
-     *            URL of the feed
+     * @param syndFeed The {@link SyndFeed} to convert
+     * @param feedUrl URL of the feed
      * @return The converted feed object
      */
     private static Feed convertFeed(final SyndFeed syndFeed, final String feedUrl) {
@@ -98,14 +95,13 @@ public class FeedService {
     /**
      * Extract the title of the feed.
      *
-     * @param syndFeed
-     *            The {@link SyndFeed} to extract the title from
+     * @param syndFeed The {@link SyndFeed} to extract the title from
      * @return The title of the {@link SyndFeed} when existing. Otherwise
      *         returns the URL of the feed
      */
     private static String extractTitle(final SyndFeed syndFeed) {
         String title = syndFeed.getTitle();
-        if (Strings.isBlank(title)) {
+        if (StringUtil.isBlank(title)) {
             title = syndFeed.getLink();
         }
         return title.trim();
@@ -115,24 +111,22 @@ public class FeedService {
      * Converts a Collection of {@link SyndEntry} into the corresponding
      * {@link Entry} objects.
      *
-     * @param syndEntries
-     *            Collection of {@link SyndEntry} to convert
+     * @param syndEntries Collection of {@link SyndEntry} to convert
      * @return The converted entries
      */
     private static Set<Entry> convertEntries(final Collection<SyndEntry> syndEntries) {
         final Set<Entry> entries = new LinkedHashSet<>();
-        for (final SyndEntry syndEntry : syndEntries) {
+        syndEntries.forEach(syndEntry -> {
             final Entry entry = convertEntry(syndEntry);
             entries.add(entry);
-        }
+        });
         return entries;
     }
 
     /**
      * Converts a {@link SyndEntry} into the corresponding {@link Entry} object.
      *
-     * @param syndEntry
-     *            The {@link SyndEntry} to convert
+     * @param syndEntry The {@link SyndEntry} to convert
      * @return The converted entry
      */
     private static Entry convertEntry(final SyndEntry syndEntry) {
@@ -156,8 +150,7 @@ public class FeedService {
     /**
      * Extracts the publish date from a {@link SyndEntry}.
      *
-     * @param syndEntry
-     *            The {@link SyndEntry} to extract the publish date from
+     * @param syndEntry The {@link SyndEntry} to extract the publish date from
      * @return The publish date of the {@link SyndEntry} if existing. Otherwise
      *         returns the date of the last update.
      */
@@ -172,19 +165,18 @@ public class FeedService {
     /**
      * Extracts the content of a {@link SyndEntry}.
      *
-     * @param syndEntry
-     *            {@link SyndEntry} to extract the content from
+     * @param syndEntry {@link SyndEntry} to extract the content from
      * @return Content of the {@link SyndEntry}
      */
     private static String extractContent(final SyndEntry syndEntry) {
         final StringBuilder content = new StringBuilder();
         final List<SyndContent> syndContents = syndEntry.getContents();
         if (!syndContents.isEmpty()) {
-            for (final SyndContent syndContent : syndContents) {
+            syndContents.forEach(syndContent -> {
                 final String value = syndContent.getValue();
                 final String trimmed = value.trim();
                 content.append(trimmed);
-            }
+            });
         } else {
             final SyndContent description = syndEntry.getDescription();
             if (description == null) {

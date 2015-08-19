@@ -2,18 +2,20 @@ package de.patrickgotthard.newsreadr.server.users;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.is;
-import static org.hamcrest.Matchers.nullValue;
+
+import java.util.List;
 
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.springframework.core.ParameterizedTypeReference;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
+import de.patrickgotthard.newsreadr.server.common.persistence.entity.Role;
 import de.patrickgotthard.newsreadr.server.test.IntegrationTest;
-import de.patrickgotthard.newsreadr.server.test.ControllerTestUtil;
-import de.patrickgotthard.newsreadr.shared.response.GetUsersResponse;
-import de.patrickgotthard.newsreadr.shared.response.Response;
-import de.patrickgotthard.newsreadr.shared.response.data.Role;
-import de.patrickgotthard.newsreadr.shared.response.data.UserData;
+import de.patrickgotthard.newsreadr.server.test.Request;
+import de.patrickgotthard.newsreadr.server.users.response.UserDTO;
 
 @RunWith(SpringJUnit4ClassRunner.class)
 @IntegrationTest
@@ -21,20 +23,20 @@ public class UserControllerIT {
 
     @Test
     public void testAddUser() {
-        final Response response = ControllerTestUtil.getAsAdmin("?method=add_user&username=newUser&password=password&role=USER", Response.class);
-        assertThat(response.getSuccess(), is(true));
-        assertThat(response.getMessage(), is(nullValue()));
+        final ResponseEntity<String> response = Request.asAdmin().path("/users?username=newUser&password=password&role=USER").post();
+        assertThat(response.getStatusCode(), is(HttpStatus.OK));
     }
 
     @Test
     public void testGetUsers() {
 
-        final GetUsersResponse response = ControllerTestUtil.getAsAdmin("?method=get_users", GetUsersResponse.class);
-        final UserData user = response.getUsers().get(0);
-        final UserData admin = response.getUsers().get(1);
+        final ResponseEntity<List<UserDTO>> response = Request.asAdmin().path("/users").get(new ParameterizedTypeReference<List<UserDTO>>() {
+        });
 
-        assertThat(response.getSuccess(), is(true));
-        assertThat(response.getMessage(), is(nullValue()));
+        final UserDTO user = response.getBody().get(0);
+        final UserDTO admin = response.getBody().get(1);
+
+        assertThat(response.getStatusCode(), is(HttpStatus.OK));
 
         assertThat(user.getUserId(), is(1l));
         assertThat(user.getUsername(), is("user"));
@@ -48,16 +50,14 @@ public class UserControllerIT {
 
     @Test
     public void testUpdateUser() {
-        final Response response = ControllerTestUtil.getAsUser("?method=update_user&userId=1&username=newUser&password=newUser&role=USER", Response.class);
-        assertThat(response.getSuccess(), is(true));
-        assertThat(response.getMessage(), is(nullValue()));
+        final ResponseEntity<String> response = Request.asUser().path("/users/1?username=newUser&password=newUser&role=USER").put();
+        assertThat(response.getStatusCode(), is(HttpStatus.OK));
     }
 
     @Test
     public void testRemoveUser() {
-        final Response response = ControllerTestUtil.getAsUser("?method=remove_user&userId=1", Response.class);
-        assertThat(response.getSuccess(), is(true));
-        assertThat(response.getMessage(), is(nullValue()));
+        final ResponseEntity<String> response = Request.asUser().path("/users/1").delete();
+        assertThat(response.getStatusCode(), is(HttpStatus.OK));
     }
 
 }

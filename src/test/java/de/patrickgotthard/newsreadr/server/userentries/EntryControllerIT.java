@@ -5,11 +5,12 @@ import static org.hamcrest.Matchers.is;
 
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
 import de.patrickgotthard.newsreadr.server.test.IntegrationTest;
-import de.patrickgotthard.newsreadr.server.test.ControllerTestUtil;
-import de.patrickgotthard.newsreadr.shared.response.GetEntryResponse;
+import de.patrickgotthard.newsreadr.server.test.Request;
 
 @RunWith(SpringJUnit4ClassRunner.class)
 @IntegrationTest
@@ -17,8 +18,9 @@ public class EntryControllerIT {
 
     @Test
     public void testGetEntry() {
-        final GetEntryResponse response = ControllerTestUtil.getAsUser("?method=get_entry&userEntryId=1", GetEntryResponse.class);
-        assertThat(response.getContent(), is("content1"));
+        final ResponseEntity<String> response = Request.asUser().path("/entries/1").get(String.class);
+        assertThat(response.getStatusCode(), is(HttpStatus.OK));
+        assertThat(response.getBody(), is("content1"));
     }
 
 }
