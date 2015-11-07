@@ -21,6 +21,7 @@ import de.patrickgotthard.newsreadr.server.common.persistence.repository.UserEnt
 import de.patrickgotthard.newsreadr.server.entries.request.AddBookmarkRequest;
 import de.patrickgotthard.newsreadr.server.entries.request.GetEntryRequest;
 import de.patrickgotthard.newsreadr.server.entries.request.RemoveBookmarkRequest;
+import de.patrickgotthard.newsreadr.server.entries.response.GetEntryResponse;
 
 public class EntryServiceTest {
 
@@ -52,8 +53,8 @@ public class EntryServiceTest {
         final User user = new User();
         user.setId(1l);
 
-        final String response = this.entryService.getEntry(request, user);
-        assertThat(response, is(content));
+        final GetEntryResponse response = this.entryService.getEntry(request, user);
+        assertThat(response.getContent(), is(content));
 
     }
 

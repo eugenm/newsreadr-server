@@ -20,7 +20,7 @@ public class EntryControllerIT {
     public void testGetEntry() {
         final ResponseEntity<String> response = Request.asUser().path("/entries/1").get(String.class);
         assertThat(response.getStatusCode(), is(HttpStatus.OK));
-        assertThat(response.getBody(), is("content1"));
+        assertThat(response.getBody(), is("{\"content\":\"content1\"}"));
     }
 
 }

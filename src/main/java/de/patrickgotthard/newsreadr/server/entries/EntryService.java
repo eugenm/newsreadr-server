@@ -26,6 +26,7 @@ import de.patrickgotthard.newsreadr.server.entries.request.MarkEntriesAsReadRequ
 import de.patrickgotthard.newsreadr.server.entries.request.RemoveBookmarkRequest;
 import de.patrickgotthard.newsreadr.server.entries.response.EntrySummary;
 import de.patrickgotthard.newsreadr.server.entries.response.GetEntriesResponse;
+import de.patrickgotthard.newsreadr.server.entries.response.GetEntryResponse;
 import de.patrickgotthard.newsreadr.server.subscriptions.response.Node.Type;
 
 @Service
@@ -94,7 +95,7 @@ class EntryService {
     }
 
     @Transactional
-    public String getEntry(final GetEntryRequest request, final User currentUser) {
+    public GetEntryResponse getEntry(final GetEntryRequest request, final User currentUser) {
 
         LOG.debug("Getting entry: {}", request);
 
@@ -115,7 +116,10 @@ class EntryService {
 
         final Whitelist whitelist = Whitelist.relaxed();
         whitelist.addTags("figure", "figcaption");
-        return Jsoup.clean(content, whitelist);
+
+        final GetEntryResponse response = new GetEntryResponse();
+        response.setContent(Jsoup.clean(content, whitelist));
+        return response;
 
     }
 

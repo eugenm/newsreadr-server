@@ -14,6 +14,7 @@ import de.patrickgotthard.newsreadr.server.entries.request.GetEntryRequest;
 import de.patrickgotthard.newsreadr.server.entries.request.MarkEntriesAsReadRequest;
 import de.patrickgotthard.newsreadr.server.entries.request.RemoveBookmarkRequest;
 import de.patrickgotthard.newsreadr.server.entries.response.GetEntriesResponse;
+import de.patrickgotthard.newsreadr.server.entries.response.GetEntryResponse;
 
 @RestController
 @RequestMapping("/api/entries")
@@ -32,7 +33,7 @@ class EntryController {
     }
 
     @RequestMapping(value = "/{userEntryId}", method = RequestMethod.GET)
-    public String getEntry(@Valid final GetEntryRequest request, final User currentUser) {
+    public GetEntryResponse getEntry(@Valid final GetEntryRequest request, final User currentUser) {
         return this.entryService.getEntry(request, currentUser);
     }
 

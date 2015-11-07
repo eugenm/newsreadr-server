@@ -135,7 +135,7 @@ newsreadrControllers.controller('EntriesController', ['$scope', '$http', '$ancho
 		$scope.toggleEntry = function(entry) {
 			entry.visible = !entry.visible; 
 			if(!entry.content) {
-				$http.get('api/entries/' + entry.id).success(function(content) {
+				$http.get('api/entries/' + entry.id).success(function(response) {
 					if(!entry.read) {
 						$scope.allEntry.unread--;
 						if(entry.bookmarked) {
@@ -143,7 +143,7 @@ newsreadrControllers.controller('EntriesController', ['$scope', '$http', '$ancho
 						}
 					}
 					entry.read = true;
-					entry.content = content;
+					entry.content = response.content;
 				});
 			}
 		};
