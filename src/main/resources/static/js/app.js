@@ -1,11 +1,12 @@
 ﻿var newsreadrControllers = angular.module('newsreadrControllers', []);
 
 var newsreadrApp = angular.module('newsreadrApp', [
-	'infinite-scroll',
-    'newsreadrControllers',
-    'ngUpload',
     'ngRoute',
-    'ngSanitize'
+    'ngSanitize',
+    'ngUpload',
+    'angular-loading-bar',
+	'infinite-scroll',
+    'newsreadrControllers'
 ]);
 
 newsreadrApp.config(function($httpProvider) {
