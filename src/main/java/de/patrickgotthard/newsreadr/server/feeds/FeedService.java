@@ -53,8 +53,12 @@ public class FeedService {
             connection.setReadTimeout(THIRTY_SECONDS);
 
             final XmlReader reader = new XmlReader(connection);
+
             final SyndFeedInput input = new SyndFeedInput();
+            input.setAllowDoctypes(true);
+
             final SyndFeed syndFeed = input.build(reader);
+
             return convertFeed(syndFeed, feedUrl);
 
         } catch (final IOException | IllegalArgumentException | FeedException e) {
@@ -96,8 +100,7 @@ public class FeedService {
      * Extract the title of the feed.
      *
      * @param syndFeed The {@link SyndFeed} to extract the title from
-     * @return The title of the {@link SyndFeed} when existing. Otherwise
-     *         returns the URL of the feed
+     * @return The title of the {@link SyndFeed} when existing. Otherwise returns the URL of the feed
      */
     private static String extractTitle(final SyndFeed syndFeed) {
         String title = syndFeed.getTitle();
@@ -108,8 +111,7 @@ public class FeedService {
     }
 
     /**
-     * Converts a Collection of {@link SyndEntry} into the corresponding
-     * {@link Entry} objects.
+     * Converts a Collection of {@link SyndEntry} into the corresponding {@link Entry} objects.
      *
      * @param syndEntries Collection of {@link SyndEntry} to convert
      * @return The converted entries
@@ -151,8 +153,7 @@ public class FeedService {
      * Extracts the publish date from a {@link SyndEntry}.
      *
      * @param syndEntry The {@link SyndEntry} to extract the publish date from
-     * @return The publish date of the {@link SyndEntry} if existing. Otherwise
-     *         returns the date of the last update.
+     * @return The publish date of the {@link SyndEntry} if existing. Otherwise returns the date of the last update.
      */
     private static Date extractPublishDate(final SyndEntry syndEntry) {
         Date publishDate = syndEntry.getPublishedDate();

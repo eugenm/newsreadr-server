@@ -6,13 +6,15 @@
 		<title>newsreadr</title>
 		<link rel="shortcut icon" href="favicon.ico" type="image/x-icon" />
 		<link rel="stylesheet" href="//fonts.googleapis.com/css?family=Source+Sans+Pro:400,600" />
-		<link rel="stylesheet" href="webjars/bootstrap/3.3.5/css/bootstrap.min.css" />
-        <link rel="stylesheet" href="webjars/bootstrap/3.3.5/css/bootstrap-theme.min.css" />
+		<link rel="stylesheet" href="webjars/bootstrap/3.3.6/css/bootstrap.min.css" />
+        <link rel="stylesheet" href="webjars/bootstrap/3.3.6/css/bootstrap-theme.min.css" />
 		<link rel="stylesheet" href="css/login.css" />
 		<!--[if lt IE 9]>
 		    <script src="webjars/html5shiv/3.7.3/html5shiv.js"></script>
             <script src="webjars/respond/1.4.2/dest/respond.min.js"></script>
 		<![endif]-->
+		<script src="webjars/jquery/1.11.3/jquery.min.js"></script>
+        <script src="webjars/bootstrap/3.3.6/js/bootstrap.min.js"></script>
 	</head>
 	<body>
 		<div class="container">
@@ -27,7 +29,5 @@
 				<div th:if="${param.newCredentials != null}" class="alert alert-success">Credentials successfully changed. Please renew your authentication</div>
 			</form>
 		</div>
-		<script src="webjars/jquery/1.11.3/jquery.min.js"></script>
-        <script src="webjars/bootstrap/3.3.5/js/bootstrap.min.js"></script>
 	</body>
 </html>
