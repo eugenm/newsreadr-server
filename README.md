@@ -2,31 +2,22 @@
 
 newsreadr is a web based [RSS](http://en.wikipedia.org/wiki/RSS) and [Atom](http://en.wikipedia.org/wiki/Atom_%28standard%29) reader.
 
+## Building
+
+1. Install [Java 8 Development Kit](http://www.oracle.com/technetwork/java/javase/downloads/index.html)
+2. Install [Maven 3](http://maven.apache.org)
+3. Clone sourcecode
+4. Execute ```mvn clean install```
+5. The target JAR file can be found under target/newsreadr-server.jar
+
 ## Installation
 
-### Prerequisites
-* Install a [Java Runtime Environment](http://www.oracle.com/technetwork/java/javase/downloads/index.html) (at least version 7)
-* Install an application server like [Tomcat](http://tomcat.apache.org) (tested with Tomcat 7, the server must support at least Servlet API v3)
+1. Install [Java 8 Runtime Environment](http://www.oracle.com/technetwork/java/javase/downloads/index.html)
+2. Create a new folder
+3. Copy **newsreadr-server.jar** and [**application.properties.tpl**](application.properties.tpl) into the folder
+4. Rename **application.properties.tpl** to **application.properties**, open it with a text editor and configure the database connection
+5. Start the application by executing ```java -jar newsreadr-server.jar```
+6. Start your browser, open **http://server:8080** (where server is the name or IP of your computer) and log in with username **admin** and password **password** (please change it immediately).
 
-### Instructions
-
-1. Download the latest newsreadr release (**newsreadr-server-&lt;version&gt;.tar.gz**) from http://nexus.patrick-gotthard.de/content/repositories/releases/de/patrickgotthard/newsreadr/newsreadr-server *
-2. Unpack the downloaded archive
-3. Open the unpacked **.newsreadr** folder, edit the contained **newsreadr.properties** and enter your database connection details
-4. Move the **.newsreadr** folder to the home folder of the user your application server runs with
-5. Give the same user write permissions for the **.newsreadr** directory
-6. Deploy the **newsreadr-server-&lt;version&gt;.war** file on your application server
-7. Log in with username 'admin' and password 'password'
-8. Change the username and password of the admin user (not necessary but recommended for security)
-
-\* Currently there are only development builds available under http://nexus.patrick-gotthard.de/content/repositories/snapshots/de/patrickgotthard/newsreadr/newsreadr-server
-
-## Build from source
-
-### Prerequisites
-* Install a [Java Development Kit](http://www.oracle.com/technetwork/java/javase/downloads/index.html) (at least version 7)
-* Install [Maven](http://maven.apache.org) (tested with version 3.2.1 but 3.1.1 should work too)
-
-### Instructions
-1. Clone the sourcecode
-2. execute ```mvn clean install```
+If you want to install newsreadr as a linux service, have a look at section [55.1 Unix/Linux services](http://docs.spring.io/spring-boot/docs/current/reference/html/deployment-install.html#deployment-service) 
+of the official Spring Boot documentation. 
