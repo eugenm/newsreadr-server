@@ -18,16 +18,6 @@ public class Folder extends AbstractUserEntity {
     @OneToMany(mappedBy = "folder", cascade = CascadeType.REMOVE)
     private Set<Subscription> subscriptions;
 
-    public Folder() {
-    }
-
-    private Folder(final Builder builder) {
-        this.setId(builder.id);
-        this.setUser(builder.user);
-        this.title = builder.title;
-        this.subscriptions = builder.subscriptions;
-    }
-
     public String getTitle() {
         return this.title;
     }
@@ -42,39 +32,6 @@ public class Folder extends AbstractUserEntity {
 
     public void setSubscriptions(final Set<Subscription> subscriptions) {
         this.subscriptions = subscriptions;
-    }
-
-    public static class Builder {
-
-        private Long id;
-        private User user;
-        private String title;
-        private Set<Subscription> subscriptions;
-
-        public Builder setId(final Long id) {
-            this.id = id;
-            return this;
-        }
-
-        public Builder setUser(final User user) {
-            this.user = user;
-            return this;
-        }
-
-        public Builder setTitle(final String title) {
-            this.title = title;
-            return this;
-        }
-
-        public Builder setSubscriptions(final Set<Subscription> subscriptions) {
-            this.subscriptions = subscriptions;
-            return this;
-        }
-
-        public Folder build() {
-            return new Folder(this);
-        }
-
     }
 
 }

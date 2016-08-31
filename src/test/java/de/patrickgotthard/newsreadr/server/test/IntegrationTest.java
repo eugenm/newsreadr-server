@@ -24,7 +24,7 @@ import de.patrickgotthard.newsreadr.server.Application;
 @SpringApplicationConfiguration(classes = Application.class)
 @WebIntegrationTest("server.port=12345")
 @TestExecutionListeners(listeners = { DependencyInjectionTestExecutionListener.class, DirtiesContextTestExecutionListener.class,
-        TransactionalTestExecutionListener.class, DbUnitTestExecutionListener.class })
+    TransactionalTestExecutionListener.class, DbUnitTestExecutionListener.class })
 @DatabaseSetup("classpath:testdata.xml")
 public @interface IntegrationTest {
 

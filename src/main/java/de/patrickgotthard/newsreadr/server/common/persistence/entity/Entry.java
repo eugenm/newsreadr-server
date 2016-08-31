@@ -37,20 +37,6 @@ public class Entry extends AbstractEntity {
     @OneToMany(mappedBy = "entry", cascade = CascadeType.REMOVE)
     private Set<UserEntry> userEntries;
 
-    public Entry() {
-    }
-
-    private Entry(final Builder builder) {
-        this.setId(builder.id);
-        this.feed = builder.feed;
-        this.uri = builder.uri;
-        this.url = builder.url;
-        this.title = builder.title;
-        this.content = builder.content;
-        this.publishDate = builder.publishDate;
-        this.userEntries = builder.userEntries;
-    }
-
     public Feed getFeed() {
         return this.feed;
     }
@@ -105,63 +91,6 @@ public class Entry extends AbstractEntity {
 
     public void setUserEntries(final Set<UserEntry> userEntries) {
         this.userEntries = userEntries;
-    }
-
-    public static class Builder {
-
-        private Long id;
-        private Feed feed;
-        private String uri;
-        private String url;
-        private String title;
-        private String content;
-        private Date publishDate;
-        private Set<UserEntry> userEntries;
-
-        public Builder setId(final Long id) {
-            this.id = id;
-            return this;
-        }
-
-        public Builder setFeed(final Feed feed) {
-            this.feed = feed;
-            return this;
-        }
-
-        public Builder setUri(final String uri) {
-            this.uri = uri;
-            return this;
-        }
-
-        public Builder setUrl(final String url) {
-            this.url = url;
-            return this;
-        }
-
-        public Builder setTitle(final String title) {
-            this.title = title;
-            return this;
-        }
-
-        public Builder setContent(final String content) {
-            this.content = content;
-            return this;
-        }
-
-        public Builder setPublishDate(final Date publishDate) {
-            this.publishDate = publishDate;
-            return this;
-        }
-
-        public Builder setUserEntries(final Set<UserEntry> userEntries) {
-            this.userEntries = userEntries;
-            return this;
-        }
-
-        public Entry build() {
-            return new Entry(this);
-        }
-
     }
 
 }

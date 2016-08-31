@@ -3,6 +3,7 @@ package de.patrickgotthard.newsreadr.server.entries.request;
 import javax.validation.constraints.Min;
 import javax.validation.constraints.NotNull;
 
+import de.patrickgotthard.newsreadr.server.common.util.ObjectUtil;
 import de.patrickgotthard.newsreadr.server.subscriptions.response.Node.Type;
 
 public class GetEntriesRequest {
@@ -65,19 +66,7 @@ public class GetEntriesRequest {
 
     @Override
     public String toString() {
-        final StringBuilder builder = new StringBuilder();
-        builder.append("GetEntriesRequest [type=");
-        builder.append(this.type);
-        builder.append(", id=");
-        builder.append(this.id);
-        builder.append(", latestEntryId=");
-        builder.append(this.latestEntryId);
-        builder.append(", unreadOnly=");
-        builder.append(this.unreadOnly);
-        builder.append(", page=");
-        builder.append(this.page);
-        builder.append("]");
-        return builder.toString();
+        return ObjectUtil.toString(this);
     }
 
 }

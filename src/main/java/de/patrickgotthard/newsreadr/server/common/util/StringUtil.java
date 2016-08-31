@@ -6,7 +6,7 @@ public final class StringUtil {
     }
 
     public static boolean isBlank(final String string) {
-        return string != null && !string.trim().isEmpty();
+        return string == null || string.trim().isEmpty();
     }
 
     public static boolean isNotBlank(final String string) {

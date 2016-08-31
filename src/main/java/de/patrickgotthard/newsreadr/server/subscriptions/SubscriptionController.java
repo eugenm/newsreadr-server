@@ -15,7 +15,6 @@ import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.multipart.MultipartFile;
 
-import de.patrickgotthard.newsreadr.server.common.persistence.entity.User;
 import de.patrickgotthard.newsreadr.server.common.util.IOUtil;
 import de.patrickgotthard.newsreadr.server.subscriptions.request.AddSubscriptionRequest;
 import de.patrickgotthard.newsreadr.server.subscriptions.request.RemoveSubscriptionRequest;
@@ -35,39 +34,39 @@ class SubscriptionController {
 
     @RequestMapping(method = RequestMethod.POST)
     @ResponseBody
-    public void addSubscription(@Valid final AddSubscriptionRequest request, final User currentUser) {
-        this.subscriptionService.addSubscription(request, currentUser);
+    public void addSubscription(@Valid final AddSubscriptionRequest request, final long currentUserId) {
+        this.subscriptionService.addSubscription(request, currentUserId);
     }
 
     @RequestMapping(method = RequestMethod.GET)
     @ResponseBody
-    public List<Node> getSubscriptions(final User currentUser) {
-        return this.subscriptionService.getSubscriptions(currentUser);
+    public List<Node> getSubscriptions(final long currentUserId) {
+        return this.subscriptionService.getSubscriptions(currentUserId);
     }
 
     @RequestMapping(value = "/{subscriptionId}", method = RequestMethod.PUT)
     @ResponseBody
-    public void updateSubscription(@Valid final UpdateSubscriptionRequest request, final User currentUser) {
-        this.subscriptionService.updateSubscription(request, currentUser);
+    public void updateSubscription(@Valid final UpdateSubscriptionRequest request, final long currentUserId) {
+        this.subscriptionService.updateSubscription(request, currentUserId);
     }
 
     @RequestMapping(value = "/{subscriptionId}", method = RequestMethod.DELETE)
     @ResponseBody
-    public void removeSubscription(@Valid final RemoveSubscriptionRequest request, final User currentUser) {
-        this.subscriptionService.removeSubscription(request, currentUser);
+    public void removeSubscription(@Valid final RemoveSubscriptionRequest request, final long currentUserId) {
+        this.subscriptionService.removeSubscription(request, currentUserId);
     }
 
     // TODO return import summary
     @RequestMapping(value = "/import", method = RequestMethod.POST)
     @ResponseBody
-    public List<String> importSubscriptions(final MultipartFile opmlFile, final User currentUser) {
-        return this.subscriptionService.importSubscriptions(opmlFile, currentUser);
+    public List<String> importSubscriptions(final MultipartFile opmlFile, final long currentUserId) {
+        return this.subscriptionService.importSubscriptions(opmlFile, currentUserId);
     }
 
     @RequestMapping(value = "/export", method = RequestMethod.GET)
-    public void exportSubscriptions(final HttpServletResponse response, final User currentUser) throws JAXBException, IOException {
+    public void exportSubscriptions(final HttpServletResponse response, final long currentUserId) throws JAXBException, IOException {
 
-        final String opml = this.subscriptionService.exportSubscriptions(currentUser);
+        final String opml = this.subscriptionService.exportSubscriptions(currentUserId);
         final int contentLength = opml.getBytes().length;
 
         response.setHeader("Content-Disposition", "attachment; filename=\"newsreadr.opml\"");

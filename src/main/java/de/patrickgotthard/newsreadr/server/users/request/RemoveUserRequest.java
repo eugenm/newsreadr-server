@@ -3,6 +3,8 @@ package de.patrickgotthard.newsreadr.server.users.request;
 import javax.validation.constraints.Min;
 import javax.validation.constraints.NotNull;
 
+import de.patrickgotthard.newsreadr.server.common.util.ObjectUtil;
+
 public class RemoveUserRequest {
 
     @NotNull
@@ -19,11 +21,7 @@ public class RemoveUserRequest {
 
     @Override
     public String toString() {
-        final StringBuilder builder = new StringBuilder();
-        builder.append("RemoveUserRequest [userId=");
-        builder.append(this.userId);
-        builder.append("]");
-        return builder.toString();
+        return ObjectUtil.toString(this);
     }
 
 }

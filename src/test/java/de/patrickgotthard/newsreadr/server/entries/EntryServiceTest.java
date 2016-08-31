@@ -11,11 +11,10 @@ import org.junit.Before;
 import org.junit.Test;
 import org.mockito.ArgumentCaptor;
 
-import com.mysema.query.types.Predicate;
+import com.querydsl.core.types.Predicate;
 
 import de.patrickgotthard.newsreadr.server.common.persistence.entity.Entry;
 import de.patrickgotthard.newsreadr.server.common.persistence.entity.Subscription;
-import de.patrickgotthard.newsreadr.server.common.persistence.entity.User;
 import de.patrickgotthard.newsreadr.server.common.persistence.entity.UserEntry;
 import de.patrickgotthard.newsreadr.server.common.persistence.repository.UserEntryRepository;
 import de.patrickgotthard.newsreadr.server.entries.request.AddBookmarkRequest;
@@ -41,19 +40,24 @@ public class EntryServiceTest {
 
         final long userEntryId = 1l;
         final String content = "content";
-        final Entry entry = new Entry.Builder().setContent(content).build();
+
+        final Entry entry = new Entry();
+        entry.setContent(content);
+
         final Subscription subscription = new Subscription();
-        final UserEntry userEntry = new UserEntry.Builder().setSubscription(subscription).setEntry(entry).build();
+
+        final UserEntry userEntry = new UserEntry();
+        userEntry.setSubscription(subscription);
+        userEntry.setEntry(entry);
 
         final GetEntryRequest request = new GetEntryRequest();
         request.setUserEntryId(userEntryId);
 
         when(this.userEntryRepository.findOne(any(Predicate.class))).thenReturn(userEntry);
 
-        final User user = new User();
-        user.setId(1l);
+        final long currentUserId = 1L;
 
-        final GetEntryResponse response = this.entryService.getEntry(request, user);
+        final GetEntryResponse response = this.entryService.getEntry(request, currentUserId);
         assertThat(response.getContent(), is(content));
 
     }
@@ -62,15 +66,20 @@ public class EntryServiceTest {
     public void testAddBookmark() {
 
         final long userEntryId = 1l;
+
         final Subscription subscription = new Subscription();
-        final UserEntry userEntry = new UserEntry.Builder().setSubscription(subscription).build();
+
+        final UserEntry userEntry = new UserEntry();
+        userEntry.setSubscription(subscription);
 
         final AddBookmarkRequest request = new AddBookmarkRequest();
         request.setUserEntryId(userEntryId);
 
         when(this.userEntryRepository.findOne(any(Predicate.class))).thenReturn(userEntry);
 
-        this.entryService.addBookmark(request, new User());
+        final long currentUserId = 1L;
+
+        this.entryService.addBookmark(request, currentUserId);
 
         final ArgumentCaptor<UserEntry> captor = ArgumentCaptor.forClass(UserEntry.class);
         verify(this.userEntryRepository).save(captor.capture());
@@ -80,16 +89,20 @@ public class EntryServiceTest {
     @Test
     public void testRemoveBookmark() {
 
-        final long userEntryId = 1l;
+        final long userEntryId = 1L;
+
         final Subscription subscription = new Subscription();
-        final UserEntry userEntry = new UserEntry.Builder().setSubscription(subscription).build();
+
+        final UserEntry userEntry = new UserEntry();
+        userEntry.setSubscription(subscription);
 
         final RemoveBookmarkRequest request = new RemoveBookmarkRequest();
         request.setUserEntryId(userEntryId);
 
         when(this.userEntryRepository.findOne(any(Predicate.class))).thenReturn(userEntry);
 
-        this.entryService.removeBookmark(request, new User());
+        final long currentUserId = 1L;
+        this.entryService.removeBookmark(request, currentUserId);
 
         final ArgumentCaptor<UserEntry> captor = ArgumentCaptor.forClass(UserEntry.class);
         verify(this.userEntryRepository).save(captor.capture());

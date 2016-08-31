@@ -3,6 +3,8 @@ package de.patrickgotthard.newsreadr.server.entries.request;
 import javax.validation.constraints.Min;
 import javax.validation.constraints.NotNull;
 
+import de.patrickgotthard.newsreadr.server.common.util.ObjectUtil;
+
 public class GetEntryRequest {
 
     @NotNull
@@ -19,11 +21,7 @@ public class GetEntryRequest {
 
     @Override
     public String toString() {
-        final StringBuilder builder = new StringBuilder();
-        builder.append("GetEntryRequest [userEntryId=");
-        builder.append(this.userEntryId);
-        builder.append("]");
-        return builder.toString();
+        return ObjectUtil.toString(this);
     }
 
 }

@@ -2,6 +2,8 @@ package de.patrickgotthard.newsreadr.server.folders.request;
 
 import org.hibernate.validator.constraints.NotBlank;
 
+import de.patrickgotthard.newsreadr.server.common.util.ObjectUtil;
+
 public class AddFolderRequest {
 
     @NotBlank
@@ -17,11 +19,7 @@ public class AddFolderRequest {
 
     @Override
     public String toString() {
-        final StringBuilder builder = new StringBuilder();
-        builder.append("AddFolderRequest [title=");
-        builder.append(this.title);
-        builder.append("]");
-        return builder.toString();
+        return ObjectUtil.toString(this);
     }
 
 }

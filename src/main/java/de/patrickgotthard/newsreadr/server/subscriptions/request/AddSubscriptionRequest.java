@@ -4,6 +4,8 @@ import javax.validation.constraints.Min;
 
 import org.hibernate.validator.constraints.NotBlank;
 
+import de.patrickgotthard.newsreadr.server.common.util.ObjectUtil;
+
 public class AddSubscriptionRequest {
 
     @NotBlank
@@ -13,15 +15,6 @@ public class AddSubscriptionRequest {
     private Long folderId;
 
     private String title;
-
-    public AddSubscriptionRequest() {
-    }
-
-    private AddSubscriptionRequest(final Builder builder) {
-        this.url = builder.url;
-        this.folderId = builder.folderId;
-        this.title = builder.title;
-    }
 
     public String getUrl() {
         return this.url;
@@ -49,42 +42,7 @@ public class AddSubscriptionRequest {
 
     @Override
     public String toString() {
-        final StringBuilder builder = new StringBuilder();
-        builder.append("AddSubscriptionRequest [url=");
-        builder.append(this.url);
-        builder.append(", folderId=");
-        builder.append(this.folderId);
-        builder.append(", title=");
-        builder.append(this.title);
-        builder.append("]");
-        return builder.toString();
-    }
-
-    public static class Builder {
-
-        private String url;
-        private Long folderId;
-        private String title;
-
-        public Builder setUrl(final String url) {
-            this.url = url;
-            return this;
-        }
-
-        public Builder setFolderId(final Long folderId) {
-            this.folderId = folderId;
-            return this;
-        }
-
-        public Builder setTitle(final String title) {
-            this.title = title;
-            return this;
-        }
-
-        public AddSubscriptionRequest build() {
-            return new AddSubscriptionRequest(this);
-        }
-
+        return ObjectUtil.toString(this);
     }
 
 }

@@ -36,64 +36,79 @@ public class UserServiceTest {
     @Test
     public void testAddUser() {
 
+        final long userId = 1L;
         final String username = "username";
         final String password = "password";
         final Role role = Role.USER;
-        final AddUserRequest request = new AddUserRequest.Builder().setUsername(username).setPassword(password).setRole(role).build();
 
         final User admin = new User();
+        admin.setId(userId + 1);
+        admin.setUsername("admin");
+        admin.setPassword("password");
         admin.setRole(Role.ADMIN);
 
-        this.userService.addUser(request, admin);
+        when(this.userRepository.findOne(userId)).thenReturn(admin);
+
+        final AddUserRequest request = new AddUserRequest();
+        request.setUsername(username);
+        request.setPassword(password);
+        request.setRole(role);
+
+        this.userService.addUser(request, userId);
 
     }
 
     @Test
     public void testGetUsers() {
 
-        final User admin = new User();
-        admin.setRole(Role.ADMIN);
+        final long userId = 1L;
 
-        final List<UserDTO> users = this.userService.getUsers(admin);
+        final User user = new User();
+        user.setId(userId);
+        user.setRole(Role.ADMIN);
+
+        when(this.userRepository.findOne(userId)).thenReturn(user);
+
+        final List<UserDTO> users = this.userService.getUsers(userId);
         assertThat(users, is(notNullValue()));
-
     }
 
     @Test
     public void testUpdateUser() {
 
-        final long userId = 1l;
+        final long userId = 1L;
         final String username = "username";
         final String password = "password";
         final Role role = Role.USER;
 
         final User user = new User();
+        user.setId(userId);
+        user.setRole(Role.ADMIN);
 
-        final User currentUser = new User();
-        currentUser.setId(userId);
+        when(this.userRepository.findOne(userId)).thenReturn(user);
 
-        when(this.userRepository.findOne(1l)).thenReturn(user);
+        final UpdateUserRequest request = new UpdateUserRequest();
+        request.setUserId(userId);
+        request.setUsername(username);
+        request.setPassword(password);
+        request.setRole(role);
 
-        final UpdateUserRequest request = new UpdateUserRequest.Builder().setUserId(userId).setUsername(username).setPassword(password).setRole(role).build();
-        this.userService.updateUser(request, currentUser);
+        this.userService.updateUser(request, userId);
 
     }
 
     @Test
     public void testRemoveUser() {
 
-        final long userId = 1l;
+        final long userId = 1L;
         final User user = new User();
-
-        final User currentUser = new User();
-        currentUser.setId(userId);
 
         final RemoveUserRequest request = new RemoveUserRequest();
         request.setUserId(userId);
 
-        when(this.userRepository.findOne(1l)).thenReturn(user);
+        when(this.userRepository.findOne(userId)).thenReturn(user);
 
-        this.userService.removeUser(request, currentUser);
+        this.userService.removeUser(request, userId);
 
     }
 

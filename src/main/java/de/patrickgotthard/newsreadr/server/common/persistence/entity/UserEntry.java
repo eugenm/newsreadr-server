@@ -24,17 +24,6 @@ public class UserEntry extends AbstractEntity {
     @Column(name = "bookmarked")
     private Boolean bookmarked;
 
-    public UserEntry() {
-    }
-
-    private UserEntry(final Builder builder) {
-        this.setId(builder.id);
-        this.subscription = builder.subscription;
-        this.entry = builder.entry;
-        this.read = builder.read;
-        this.bookmarked = builder.bookmarked;
-    }
-
     public Subscription getSubscription() {
         return this.subscription;
     }
@@ -65,45 +54,6 @@ public class UserEntry extends AbstractEntity {
 
     public void setBookmarked(final Boolean bookmarked) {
         this.bookmarked = bookmarked;
-    }
-
-    public static class Builder {
-
-        private Long id;
-        private Subscription subscription;
-        private Entry entry;
-        private Boolean read;
-        private Boolean bookmarked;
-
-        public Builder setId(final Long id) {
-            this.id = id;
-            return this;
-        }
-
-        public Builder setSubscription(final Subscription subscription) {
-            this.subscription = subscription;
-            return this;
-        }
-
-        public Builder setEntry(final Entry entry) {
-            this.entry = entry;
-            return this;
-        }
-
-        public Builder setRead(final Boolean read) {
-            this.read = read;
-            return this;
-        }
-
-        public Builder setBookmarked(final Boolean bookmarked) {
-            this.bookmarked = bookmarked;
-            return this;
-        }
-
-        public UserEntry build() {
-            return new UserEntry(this);
-        }
-
     }
 
 }

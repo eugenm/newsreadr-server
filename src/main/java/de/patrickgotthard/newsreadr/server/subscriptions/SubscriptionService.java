@@ -18,13 +18,12 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
-import com.mysema.query.BooleanBuilder;
-import com.mysema.query.types.OrderSpecifier;
-import com.mysema.query.types.expr.BooleanExpression;
+import com.querydsl.core.BooleanBuilder;
+import com.querydsl.core.types.OrderSpecifier;
+import com.querydsl.core.types.dsl.BooleanExpression;
 
 import de.patrickgotthard.newsreadr.server.common.persistence.entity.Entry;
 import de.patrickgotthard.newsreadr.server.common.persistence.entity.Feed;
@@ -41,9 +40,11 @@ import de.patrickgotthard.newsreadr.server.common.persistence.repository.FeedRep
 import de.patrickgotthard.newsreadr.server.common.persistence.repository.FolderRepository;
 import de.patrickgotthard.newsreadr.server.common.persistence.repository.SubscriptionRepository;
 import de.patrickgotthard.newsreadr.server.common.persistence.repository.UserEntryRepository;
+import de.patrickgotthard.newsreadr.server.common.persistence.repository.UserRepository;
 import de.patrickgotthard.newsreadr.server.common.rest.AlreadyExistsException;
 import de.patrickgotthard.newsreadr.server.common.rest.NotFoundException;
 import de.patrickgotthard.newsreadr.server.common.rest.ServerException;
+import de.patrickgotthard.newsreadr.server.common.tx.TransactionHelper;
 import de.patrickgotthard.newsreadr.server.common.util.StringUtil;
 import de.patrickgotthard.newsreadr.server.feeds.FeedService;
 import de.patrickgotthard.newsreadr.server.subscriptions.opml.Body;
@@ -63,93 +64,117 @@ class SubscriptionService {
 
     private final FeedRepository feedRepository;
     private final EntryRepository entryRepository;
+    private final UserRepository userRepository;
     private final UserEntryRepository userEntryRepository;
     private final FolderRepository folderRepository;
     private final SubscriptionRepository subscriptionRepository;
     private final FeedService feedService;
+    private final TransactionHelper transactionHelper;
 
     @Autowired
-    public SubscriptionService(final FeedRepository feedRepository, final EntryRepository entryRepository, final UserEntryRepository userEntryRepository,
-            final FolderRepository folderRepository, final SubscriptionRepository subscriptionRepository, final FeedService feedService) {
+    public SubscriptionService(final FeedRepository feedRepository, final EntryRepository entryRepository, final UserRepository userRepository,
+        final UserEntryRepository userEntryRepository, final FolderRepository folderRepository, final SubscriptionRepository subscriptionRepository,
+        final FeedService feedService, final TransactionHelper transactionHelper) {
         this.feedRepository = feedRepository;
         this.entryRepository = entryRepository;
+        this.userRepository = userRepository;
         this.userEntryRepository = userEntryRepository;
         this.folderRepository = folderRepository;
         this.subscriptionRepository = subscriptionRepository;
         this.feedService = feedService;
+        this.transactionHelper = transactionHelper;
     }
 
-    @Transactional(propagation = Propagation.REQUIRES_NEW)
-    public void addSubscription(final AddSubscriptionRequest request, final User currentUser) {
+    public void addSubscription(final AddSubscriptionRequest request, final long currentUserId) {
 
-        LOG.debug("Adding subscription {}", request);
+        this.transactionHelper.executeInNewTransaction(() -> {
 
-        Folder folder = null;
+            LOG.debug("Adding subscription {}", request);
 
-        final Long folderId = request.getFolderId();
-        if (folderId != null) {
-            folder = this.loadFolder(folderId, currentUser);
-            if (folder == null) {
-                throw new NotFoundException("Folder does not exist");
-            }
-        }
+            Folder folder = null;
 
-        final String url = StringUtil.cleanUrl(request.getUrl());
-        Feed feed = this.feedRepository.findOne(QFeed.feed.url.eq(url));
-
-        Set<Entry> entries;
-        if (feed == null) {
-
-            feed = this.feedService.fetch(url);
-            feed = this.feedRepository.save(feed);
-
-            entries = new LinkedHashSet<>();
-            for (final Entry entry : feed.getEntries()) {
-                entry.setFeed(feed);
-                entries.add(this.entryRepository.save(entry));
+            final Long folderId = request.getFolderId();
+            if (folderId != null) {
+                folder = this.loadFolder(folderId, currentUserId);
+                if (folder == null) {
+                    throw new NotFoundException("Folder does not exist");
+                }
             }
 
-        } else {
-            entries = feed.getEntries();
-        }
+            final String url = StringUtil.cleanUrl(request.getUrl());
+            Feed feed = this.feedRepository.findOne(QFeed.feed.url.eq(url));
 
-        final BooleanBuilder filter = new BooleanBuilder();
-        filter.and(QSubscription.subscription.user.eq(currentUser));
-        filter.and(QSubscription.subscription.feed.eq(feed));
+            Set<Entry> entries;
+            if (feed == null) {
 
-        final boolean subscribed = this.subscriptionRepository.count(filter) > 0;
-        if (subscribed) {
+                feed = this.feedService.fetch(url);
+                feed = this.feedRepository.save(feed);
 
-            throw new AlreadyExistsException("Subscription already exists");
+                entries = new LinkedHashSet<>();
+                for (final Entry entry1 : feed.getEntries()) {
+                    entry1.setFeed(feed);
+                    entries.add(this.entryRepository.save(entry1));
+                }
 
-        } else {
-
-            String title = request.getTitle();
-            if (StringUtil.isBlank(title)) {
-                title = feed.getTitle();
+            } else {
+                entries = feed.getEntries();
             }
 
-            Subscription subscription = new Subscription.Builder().setUser(currentUser).setFolder(folder).setFeed(feed).setTitle(title).build();
-            subscription = this.subscriptionRepository.save(subscription);
+            final BooleanBuilder filter = new BooleanBuilder();
+            filter.and(QSubscription.subscription.user.id.eq(currentUserId));
+            filter.and(QSubscription.subscription.feed.eq(feed));
 
-            for (final Entry entry : entries) {
-                final UserEntry userEntry = new UserEntry.Builder().setSubscription(subscription).setEntry(entry).setRead(false).setBookmarked(false).build();
-                this.userEntryRepository.save(userEntry);
+            final boolean subscribed = this.subscriptionRepository.count(filter) > 0;
+            if (subscribed) {
+
+                throw new AlreadyExistsException("Subscription already exists");
+
+            } else {
+
+                String title = request.getTitle();
+                if (StringUtil.isBlank(title)) {
+                    title = feed.getTitle();
+                }
+
+                final User currentUser = this.userRepository.findOne(currentUserId);
+
+                Subscription subscription = new Subscription();
+                subscription.setUser(currentUser);
+                subscription.setFolder(folder);
+                subscription.setFeed(feed);
+                subscription.setTitle(title);
+
+                subscription = this.subscriptionRepository.save(subscription);
+
+                for (final Entry entry : entries) {
+
+                    final UserEntry userEntry = new UserEntry();
+                    userEntry.setSubscription(subscription);
+                    userEntry.setEntry(entry);
+                    userEntry.setRead(false);
+                    userEntry.setBookmarked(false);
+
+                    this.userEntryRepository.save(userEntry);
+
+                }
+
+                LOG.debug("Added subscription {}", request);
+
             }
 
-            LOG.debug("Added subscription {}", request);
+            return null;
 
-        }
+        });
 
     }
 
     @Transactional
-    public List<Node> getSubscriptions(final User currentUser) {
+    public List<Node> getSubscriptions(final long currentUserId) {
 
         LOG.debug("Listing subscriptions");
 
         // common query expressions
-        final BooleanExpression belongsToUser = QUserEntry.userEntry.subscription.user.eq(currentUser);
+        final BooleanExpression belongsToUser = QUserEntry.userEntry.subscription.user.id.eq(currentUserId);
         final BooleanExpression isUnread = QUserEntry.userEntry.read.isFalse();
 
         // total node
@@ -162,7 +187,7 @@ class SubscriptionService {
         final Node bookmarksNode = new Node.Builder().type(Type.BOOKMARKS).title("Bookmarks").unread(bookmarksUnread).build();
 
         // folder nodes
-        final BooleanExpression foldersBelongingToUser = QFolder.folder.user.eq(currentUser);
+        final BooleanExpression foldersBelongingToUser = QFolder.folder.user.id.eq(currentUserId);
         final OrderSpecifier<String> orderByFolderTitleAsc = QFolder.folder.title.asc();
         final List<Folder> folders = this.folderRepository.findAll(foldersBelongingToUser, orderByFolderTitleAsc);
 
@@ -180,7 +205,7 @@ class SubscriptionService {
 
             final List<Node> subscriptionNodes = new ArrayList<>();
             for (final Subscription subscription : subscriptions) {
-                final Node subscriptionNode = this.convert(currentUser, folderId, subscription);
+                final Node subscriptionNode = this.convert(currentUserId, folderId, subscription);
                 folderUnread += subscriptionNode.getUnread();
                 subscriptionNodes.add(subscriptionNode);
             }
@@ -191,7 +216,7 @@ class SubscriptionService {
         }
 
         // subscription nodes (without folder)
-        final BooleanExpression subscriptionBelongsToUser = QSubscription.subscription.user.eq(currentUser);
+        final BooleanExpression subscriptionBelongsToUser = QSubscription.subscription.user.id.eq(currentUserId);
         final BooleanExpression hasNoFolder = QSubscription.subscription.folder.isNull();
         final OrderSpecifier<String> orderBySubscriptionTitleAsc = QSubscription.subscription.title.asc();
         final List<Subscription> subscriptionsWithoutFolder = this.subscriptionRepository.findAll(subscriptionBelongsToUser.and(hasNoFolder),
@@ -199,7 +224,7 @@ class SubscriptionService {
 
         final List<Node> subscriptionNodes = new ArrayList<>();
         for (final Subscription subscription : subscriptionsWithoutFolder) {
-            subscriptionNodes.add(this.convert(currentUser, null, subscription));
+            subscriptionNodes.add(this.convert(currentUserId, null, subscription));
         }
 
         // assemble and return result
@@ -213,12 +238,12 @@ class SubscriptionService {
     }
 
     @Transactional
-    public void updateSubscription(final UpdateSubscriptionRequest request, final User currentUser) {
+    public void updateSubscription(final UpdateSubscriptionRequest request, final long currentUserId) {
 
         LOG.debug("Updating subscriptions: {}", request);
 
         final Long subscriptionId = request.getSubscriptionId();
-        final Subscription subscription = this.loadSubscription(subscriptionId, currentUser);
+        final Subscription subscription = this.loadSubscription(subscriptionId, currentUserId);
         if (subscription == null) {
             throw new NotFoundException("Subscription does not exist");
         }
@@ -229,7 +254,7 @@ class SubscriptionService {
         if (folderId == null) {
             folder = null;
         } else {
-            folder = this.loadFolder(folderId, currentUser);
+            folder = this.loadFolder(folderId, currentUserId);
             if (folder == null) {
                 throw new NotFoundException("Folder does not exist");
             }
@@ -248,13 +273,13 @@ class SubscriptionService {
     }
 
     @Transactional
-    public void removeSubscription(final RemoveSubscriptionRequest request, final User currentUser) {
+    public void removeSubscription(final RemoveSubscriptionRequest request, final long currentUserId) {
 
         LOG.debug("Removing subscription: {}", request);
 
         // load subscription
         final Long subscriptionId = request.getSubscriptionId();
-        final Subscription subscription = this.loadSubscription(subscriptionId, currentUser);
+        final Subscription subscription = this.loadSubscription(subscriptionId, currentUserId);
         if (subscription == null) {
             throw new NotFoundException("Subscription does not exist");
         }
@@ -270,7 +295,9 @@ class SubscriptionService {
     }
 
     @Transactional
-    public List<String> importSubscriptions(final MultipartFile opmlFile, final User currentUser) {
+    public List<String> importSubscriptions(final MultipartFile opmlFile, final long currentUserId) {
+
+        final User currentUser = this.userRepository.findOne(currentUserId);
 
         LOG.debug("Importing subscriptions: {}", opmlFile);
 
@@ -292,13 +319,18 @@ class SubscriptionService {
             if (StringUtil.isBlank(xmlUrl)) {
 
                 final BooleanBuilder filter = new BooleanBuilder();
-                filter.and(QFolder.folder.user.eq(currentUser));
+                filter.and(QFolder.folder.user.id.eq(currentUserId));
                 filter.and(QFolder.folder.title.eq(title));
 
                 Folder folder = this.folderRepository.findOne(filter);
                 if (folder == null) {
-                    folder = new Folder.Builder().setUser(currentUser).setTitle(title).build();
+
+                    folder = new Folder();
+                    folder.setUser(currentUser);
+                    folder.setTitle(title);
+
                     folder = this.folderRepository.save(folder);
+
                 }
 
                 final Long folderId = folder.getId();
@@ -309,27 +341,41 @@ class SubscriptionService {
                     final String childUrl = child.getXmlUrl();
                     final String childTitle = child.getTitle();
 
-                    if (StringUtil.isBlank(childUrl)) {
-                        LOG.debug("Child has no url: {}", child);
-                    } else {
+                    if (StringUtil.isNotBlank(childUrl)) {
+
                         try {
-                            final AddSubscriptionRequest request = new AddSubscriptionRequest.Builder().setUrl(childUrl).setFolderId(folderId)
-                                    .setTitle(childTitle).build();
-                            this.addSubscription(request, currentUser);
+
+                            final AddSubscriptionRequest request = new AddSubscriptionRequest();
+                            request.setUrl(childUrl);
+                            request.setFolderId(folderId);
+                            request.setTitle(childTitle);
+
+                            this.addSubscription(request, currentUserId);
+
                         } catch (final Exception e) {
                             failed.add(childTitle);
+                            LOG.debug("Unable to subscribe feed: " + xmlUrl, e);
                         }
+
                     }
 
                 }
 
             } else {
+
                 try {
-                    final AddSubscriptionRequest request = new AddSubscriptionRequest.Builder().setUrl(xmlUrl).setTitle(title).build();
-                    this.addSubscription(request, currentUser);
+
+                    final AddSubscriptionRequest request = new AddSubscriptionRequest();
+                    request.setUrl(xmlUrl);
+                    request.setTitle(title);
+
+                    this.addSubscription(request, currentUserId);
+
                 } catch (final Exception e) {
                     failed.add(title);
+                    LOG.debug("Unable to subscribe feed: " + xmlUrl, e);
                 }
+
             }
 
         }
@@ -341,15 +387,15 @@ class SubscriptionService {
     }
 
     @Transactional(readOnly = true)
-    public String exportSubscriptions(final User currentUser) throws JAXBException {
+    public String exportSubscriptions(final long currentUserId) throws JAXBException {
 
         LOG.debug("Exporting subscriptions");
 
         try {
 
-            final List<Outline> outlines = new ArrayList<Outline>();
+            final List<Outline> outlines = new ArrayList<>();
 
-            final List<Node> nodes = this.getSubscriptions(currentUser);
+            final List<Node> nodes = this.getSubscriptions(currentUserId);
 
             for (final Node node : nodes) {
 
@@ -357,7 +403,7 @@ class SubscriptionService {
 
                 if (Type.FOLDER.equals(type)) {
 
-                    final List<Outline> children = new ArrayList<Outline>();
+                    final List<Outline> children = new ArrayList<>();
 
                     for (final Node subscriptionNode : node.getSubscriptions()) {
 
@@ -425,39 +471,31 @@ class SubscriptionService {
 
     }
 
-    private Folder loadFolder(final long folderId, final User currentUser) {
+    private Folder loadFolder(final long folderId, final long currentUserId) {
         final BooleanBuilder folderFilter = new BooleanBuilder();
         folderFilter.and(QFolder.folder.id.eq(folderId));
-        folderFilter.and(QFolder.folder.user.eq(currentUser));
+        folderFilter.and(QFolder.folder.user.id.eq(currentUserId));
         return this.folderRepository.findOne(folderFilter);
     }
 
-    private Subscription loadSubscription(final long subscriptionId, final User currentUser) {
+    private Subscription loadSubscription(final long subscriptionId, final long currentUserId) {
         final BooleanBuilder filter = new BooleanBuilder();
         filter.and(QSubscription.subscription.id.eq(subscriptionId));
-        filter.and(QSubscription.subscription.user.eq(currentUser));
+        filter.and(QSubscription.subscription.user.id.eq(currentUserId));
         return this.subscriptionRepository.findOne(filter);
     }
 
-    private Node convert(final User currentUser, final Long folderId, final Subscription subscription) {
+    private Node convert(final long currentUserId, final Long folderId, final Subscription subscription) {
 
         final BooleanBuilder filter = new BooleanBuilder();
-        filter.and(QUserEntry.userEntry.subscription.user.eq(currentUser));
+        filter.and(QUserEntry.userEntry.subscription.user.id.eq(currentUserId));
         filter.and(QUserEntry.userEntry.read.isFalse());
         filter.and(QUserEntry.userEntry.subscription.eq(subscription));
 
         final long unread = this.userEntryRepository.count(filter);
 
-        // @formatter:off
-        return new Node.Builder()
-            .type(Type.SUBSCRIPTION)
-            .id(subscription.getId())
-            .folderId(folderId)
-            .url(subscription.getFeed().getUrl())
-            .title(subscription.getTitle())
-            .unread(unread)
-            .build();
-        // @formatter:on
+        return new Node.Builder().type(Type.SUBSCRIPTION).id(subscription.getId()).folderId(folderId).url(subscription.getFeed().getUrl())
+                .title(subscription.getTitle()).unread(unread).build();
 
     }
 

@@ -3,6 +3,7 @@ package de.patrickgotthard.newsreadr.server.entries.request;
 import javax.validation.constraints.Min;
 import javax.validation.constraints.NotNull;
 
+import de.patrickgotthard.newsreadr.server.common.util.ObjectUtil;
 import de.patrickgotthard.newsreadr.server.subscriptions.response.Node.Type;
 
 public class MarkEntriesAsReadRequest {
@@ -43,15 +44,7 @@ public class MarkEntriesAsReadRequest {
 
     @Override
     public String toString() {
-        final StringBuilder builder = new StringBuilder();
-        builder.append("MarkEntriesAsReadRequest [type=");
-        builder.append(this.type);
-        builder.append(", id=");
-        builder.append(this.id);
-        builder.append(", latestEntryId=");
-        builder.append(this.latestEntryId);
-        builder.append("]");
-        return builder.toString();
+        return ObjectUtil.toString(this);
     }
 
 }

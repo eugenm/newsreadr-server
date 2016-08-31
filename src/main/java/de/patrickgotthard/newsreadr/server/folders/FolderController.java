@@ -7,7 +7,6 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RestController;
 
-import de.patrickgotthard.newsreadr.server.common.persistence.entity.User;
 import de.patrickgotthard.newsreadr.server.folders.request.AddFolderRequest;
 import de.patrickgotthard.newsreadr.server.folders.request.RemoveFolderRequest;
 import de.patrickgotthard.newsreadr.server.folders.request.UpdateFolderRequest;
@@ -24,18 +23,18 @@ class FolderController {
     }
 
     @RequestMapping(method = RequestMethod.POST)
-    public void addFolder(@Valid final AddFolderRequest request, final User currentUser) {
-        this.folderService.addFolder(request, currentUser);
+    public void addFolder(@Valid final AddFolderRequest request, final long currentUserId) {
+        this.folderService.addFolder(request, currentUserId);
     }
 
     @RequestMapping(value = "/{folderId}", method = RequestMethod.PUT)
-    public void updateFolder(@Valid final UpdateFolderRequest request, final User currentUser) {
-        this.folderService.updateFolder(request, currentUser);
+    public void updateFolder(@Valid final UpdateFolderRequest request, final long currentUserId) {
+        this.folderService.updateFolder(request, currentUserId);
     }
 
     @RequestMapping(value = "/{folderId}", method = RequestMethod.DELETE)
-    public void removeFolder(@Valid final RemoveFolderRequest request, final User currentUser) {
-        this.folderService.removeFolder(request, currentUser);
+    public void removeFolder(@Valid final RemoveFolderRequest request, final long currentUserId) {
+        this.folderService.removeFolder(request, currentUserId);
     }
 
 }

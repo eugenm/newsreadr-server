@@ -11,8 +11,7 @@ import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
-import de.patrickgotthard.newsreadr.server.common.persistence.entity.Role;
-import de.patrickgotthard.newsreadr.server.common.persistence.entity.User;
+import de.patrickgotthard.newsreadr.server.common.rest.NewsreadrUserDetails;
 import de.patrickgotthard.newsreadr.server.test.IntegrationTest;
 
 @RunWith(SpringJUnit4ClassRunner.class)
@@ -29,12 +28,11 @@ public class NewsreadrUserDetailsServiceIT {
         final String adminUsername = "admin";
 
         final UserDetails userDetails = this.service.loadUserByUsername(adminUsername);
-        assertThat(userDetails, instanceOf(User.class));
+        assertThat(userDetails, instanceOf(NewsreadrUserDetails.class));
 
-        final User user = (User) userDetails;
+        final NewsreadrUserDetails user = (NewsreadrUserDetails) userDetails;
         assertThat(user.getId(), is(adminId));
         assertThat(user.getUsername(), is(adminUsername));
-        assertThat(user.getRole(), is(Role.ADMIN));
 
     }
 

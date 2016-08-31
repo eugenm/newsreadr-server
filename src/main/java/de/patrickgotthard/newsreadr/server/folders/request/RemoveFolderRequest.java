@@ -3,6 +3,8 @@ package de.patrickgotthard.newsreadr.server.folders.request;
 import javax.validation.constraints.Min;
 import javax.validation.constraints.NotNull;
 
+import de.patrickgotthard.newsreadr.server.common.util.ObjectUtil;
+
 public class RemoveFolderRequest {
 
     @NotNull
@@ -19,11 +21,7 @@ public class RemoveFolderRequest {
 
     @Override
     public String toString() {
-        final StringBuilder builder = new StringBuilder();
-        builder.append("RemoveFolderRequest [folderId=");
-        builder.append(this.folderId);
-        builder.append("]");
-        return builder.toString();
+        return ObjectUtil.toString(this);
     }
 
 }

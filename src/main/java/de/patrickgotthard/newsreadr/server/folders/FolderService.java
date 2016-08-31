@@ -6,12 +6,13 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import com.mysema.query.BooleanBuilder;
+import com.querydsl.core.BooleanBuilder;
 
 import de.patrickgotthard.newsreadr.server.common.persistence.entity.Folder;
 import de.patrickgotthard.newsreadr.server.common.persistence.entity.QFolder;
 import de.patrickgotthard.newsreadr.server.common.persistence.entity.User;
 import de.patrickgotthard.newsreadr.server.common.persistence.repository.FolderRepository;
+import de.patrickgotthard.newsreadr.server.common.persistence.repository.UserRepository;
 import de.patrickgotthard.newsreadr.server.common.rest.AlreadyExistsException;
 import de.patrickgotthard.newsreadr.server.common.rest.NotFoundException;
 import de.patrickgotthard.newsreadr.server.feeds.FeedService;
@@ -24,27 +25,34 @@ class FolderService {
 
     private static final Logger LOG = LoggerFactory.getLogger(FeedService.class);
 
+    private final UserRepository userRepository;
     private final FolderRepository folderRepository;
     private final FeedService feedService;
 
     @Autowired
-    public FolderService(final FolderRepository folderRepository, final FeedService feedService) {
+    public FolderService(final UserRepository userRepository, final FolderRepository folderRepository, final FeedService feedService) {
+        this.userRepository = userRepository;
         this.folderRepository = folderRepository;
         this.feedService = feedService;
     }
 
     @Transactional
-    public void addFolder(final AddFolderRequest request, final User currentUser) {
+    public void addFolder(final AddFolderRequest request, final long currentUserId) {
 
         LOG.debug("Adding folder: {}", request);
         final String title = request.getTitle();
 
-        final boolean folderExists = this.folderExists(title, currentUser);
+        final boolean folderExists = this.folderExists(title, currentUserId);
         if (folderExists) {
             throw new AlreadyExistsException("The folder " + title + " does already exist");
         }
 
-        final Folder folder = new Folder.Builder().setUser(currentUser).setTitle(title).build();
+        final User currentUser = this.userRepository.findOne(currentUserId);
+
+        final Folder folder = new Folder();
+        folder.setUser(currentUser);
+        folder.setTitle(title);
+
         this.folderRepository.save(folder);
 
         LOG.debug("Successfully added folder: {}", title);
@@ -52,12 +60,12 @@ class FolderService {
     }
 
     @Transactional
-    public void updateFolder(final UpdateFolderRequest request, final User currentUser) {
+    public void updateFolder(final UpdateFolderRequest request, final long currentUserId) {
 
         LOG.debug("Updating folder: {}", request);
 
         // load folder
-        final Folder folder = this.loadFolder(request.getFolderId(), currentUser);
+        final Folder folder = this.loadFolder(request.getFolderId(), currentUserId);
         if (folder == null) {
             throw new NotFoundException("Folder does not exist");
         }
@@ -65,7 +73,7 @@ class FolderService {
         // check whether new folder name already exists
         final String newTitle = request.getTitle();
 
-        final boolean folderAlreadyExists = this.folderExists(newTitle, currentUser);
+        final boolean folderAlreadyExists = this.folderExists(newTitle, currentUserId);
         if (folderAlreadyExists) {
             throw new AlreadyExistsException("The folder " + newTitle + " does already exist");
         }
@@ -79,12 +87,12 @@ class FolderService {
     }
 
     @Transactional
-    public void removeFolder(final RemoveFolderRequest request, final User currentUser) {
+    public void removeFolder(final RemoveFolderRequest request, final long currentUserId) {
 
         LOG.debug("Deleting folder: {}", request);
 
         // load folder
-        final Folder folder = this.loadFolder(request.getFolderId(), currentUser);
+        final Folder folder = this.loadFolder(request.getFolderId(), currentUserId);
         if (folder == null) {
             throw new NotFoundException("Folder does not exist");
         }
@@ -99,18 +107,18 @@ class FolderService {
 
     }
 
-    private Folder loadFolder(final long folderId, final User currentUser) {
+    private Folder loadFolder(final long folderId, final long currentUserId) {
         final BooleanBuilder filter = new BooleanBuilder();
         filter.and(QFolder.folder.id.eq(folderId));
-        filter.and(QFolder.folder.user.eq(currentUser));
+        filter.and(QFolder.folder.user.id.eq(currentUserId));
         return this.folderRepository.findOne(filter);
     }
 
-    private boolean folderExists(final String title, final User currentUser) {
+    private boolean folderExists(final String title, final long currentUserId) {
         final BooleanBuilder filter = new BooleanBuilder();
-        filter.and(QFolder.folder.user.eq(currentUser));
+        filter.and(QFolder.folder.user.id.eq(currentUserId));
         filter.and(QFolder.folder.title.eq(title));
-        return this.folderRepository.count(filter) > 0;
+        return this.folderRepository.exists(filter);
     }
 
 }

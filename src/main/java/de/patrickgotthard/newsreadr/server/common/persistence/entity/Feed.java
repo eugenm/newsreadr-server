@@ -24,17 +24,6 @@ public class Feed extends AbstractEntity {
     @OneToMany(mappedBy = "feed", cascade = CascadeType.REMOVE)
     private Set<Entry> entries;
 
-    public Feed() {
-    }
-
-    private Feed(final Builder builder) {
-        this.setId(builder.id);
-        this.url = builder.url;
-        this.title = builder.title;
-        this.subscriptions = builder.subscriptions;
-        this.entries = builder.entries;
-    }
-
     public String getUrl() {
         return this.url;
     }
@@ -65,45 +54,6 @@ public class Feed extends AbstractEntity {
 
     public void setEntries(final Set<Entry> entries) {
         this.entries = entries;
-    }
-
-    public static class Builder {
-
-        private Long id;
-        private String url;
-        private String title;
-        private Set<Subscription> subscriptions;
-        private Set<Entry> entries;
-
-        public Builder setId(final Long id) {
-            this.id = id;
-            return this;
-        }
-
-        public Builder setUrl(final String url) {
-            this.url = url;
-            return this;
-        }
-
-        public Builder setTitle(final String title) {
-            this.title = title;
-            return this;
-        }
-
-        public Builder setSubscriptions(final Set<Subscription> subscriptions) {
-            this.subscriptions = subscriptions;
-            return this;
-        }
-
-        public Builder setEntries(final Set<Entry> entries) {
-            this.entries = entries;
-            return this;
-        }
-
-        public Feed build() {
-            return new Feed(this);
-        }
-
     }
 
 }

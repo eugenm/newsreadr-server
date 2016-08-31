@@ -9,7 +9,6 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RestController;
 
-import de.patrickgotthard.newsreadr.server.common.persistence.entity.User;
 import de.patrickgotthard.newsreadr.server.users.request.AddUserRequest;
 import de.patrickgotthard.newsreadr.server.users.request.RemoveUserRequest;
 import de.patrickgotthard.newsreadr.server.users.request.UpdateUserRequest;
@@ -27,23 +26,23 @@ class UserController {
     }
 
     @RequestMapping(method = RequestMethod.POST)
-    public void addUser(@Valid final AddUserRequest request, final User currentUser) {
-        this.userService.addUser(request, currentUser);
+    public void addUser(@Valid final AddUserRequest request, final long currentUserId) {
+        this.userService.addUser(request, currentUserId);
     }
 
     @RequestMapping(method = RequestMethod.GET)
-    public List<UserDTO> getUsers(final User user) {
-        return this.userService.getUsers(user);
+    public List<UserDTO> getUsers(final long currentUserId) {
+        return this.userService.getUsers(currentUserId);
     }
 
     @RequestMapping(value = "/{userId}", method = RequestMethod.PUT)
-    public void updateUser(@Valid final UpdateUserRequest request, final User currentUser) {
-        this.userService.updateUser(request, currentUser);
+    public void updateUser(@Valid final UpdateUserRequest request, final long currentUserId) {
+        this.userService.updateUser(request, currentUserId);
     }
 
     @RequestMapping(value = "/{userId}", method = RequestMethod.DELETE)
-    public void removeUser(@Valid final RemoveUserRequest request, final User currentUser) {
-        this.userService.removeUser(request, currentUser);
+    public void removeUser(@Valid final RemoveUserRequest request, final long currentUserId) {
+        this.userService.removeUser(request, currentUserId);
     }
 
 }
