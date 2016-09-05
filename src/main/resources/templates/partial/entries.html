@@ -25,16 +25,8 @@
 		    <li ng-repeat="node in nodes">
                 <i class="fa fa-list-ul fa-fw" ng-show="node.type == 'ALL'"></i>
                 <i class="fa fa-bookmark fa-fw" ng-show="node.type == 'BOOKMARKS'"></i>
-                <i class="fa fa-angle-right fa-fw pointer" ng-show="node.type == 'FOLDER' &amp;&amp; !node.expanded" ng-click="toggleFolder(node)"></i>
-                <i class="fa fa-angle-down fa-fw pointer" ng-show="node.type == 'FOLDER' &amp;&amp; node.expanded" ng-click="toggleFolder(node)"></i>
                 <span class="unread" ng-hide="node.unread == 0">{{node.unread}}</span>
                 <span class="pointer" ng-click="changeFeed(node)">{{node.title}}</span>
-                <ul ng-show="node.type == 'FOLDER' &amp;&amp; node.expanded &amp;&amp; node.subscriptions.length != 0">
-                    <li ng-repeat="subscription in node.subscriptions">
-                        <span class="unread" ng-hide="subscription.unread == 0">{{subscription.unread}}</span>
-                        <span class="pointer" ng-click="changeFeed(subscription)">{{subscription.title}}</span>
-                    </li>
-                </ul>
 		    </li>
 		</ul>
 		<div class="col-xs-10">

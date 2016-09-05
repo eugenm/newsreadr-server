@@ -13,13 +13,4 @@ public final class StringUtil {
         return !isBlank(string);
     }
 
-    public static String cleanUrl(final String url) {
-        String cleaned = url == null ? "" : url;
-        cleaned = cleaned.trim();
-        if (cleaned.endsWith("/")) {
-            cleaned = cleaned.substring(0, cleaned.length() - 1);
-        }
-        return cleaned;
-    }
-
 }

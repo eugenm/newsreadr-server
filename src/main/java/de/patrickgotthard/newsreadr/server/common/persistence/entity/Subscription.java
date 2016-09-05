@@ -2,6 +2,7 @@ package de.patrickgotthard.newsreadr.server.common.persistence.entity;
 
 import java.util.Set;
 
+import javax.persistence.AttributeOverride;
 import javax.persistence.CascadeType;
 import javax.persistence.Column;
 import javax.persistence.Entity;
@@ -12,36 +13,36 @@ import javax.persistence.Table;
 
 @Entity
 @Table(name = "subscriptions")
-public class Subscription extends AbstractUserEntity {
+@AttributeOverride(name = "id", column = @Column(name = "subscription_id"))
+public class Subscription extends AbstractEntity {
 
     @ManyToOne
-    @JoinColumn(name = "folder_id")
-    private Folder folder;
+    @JoinColumn(name = "user_id")
+    private User user;
 
-    @ManyToOne
-    @JoinColumn(name = "feed_id")
-    private Feed feed;
+    @Column(name = "url")
+    private String url;
 
     @Column(name = "title")
     private String title;
 
     @OneToMany(mappedBy = "subscription", cascade = CascadeType.REMOVE)
-    private Set<UserEntry> userEntries;
+    private Set<Entry> entries;
 
-    public Folder getFolder() {
-        return this.folder;
+    public User getUser() {
+        return this.user;
     }
 
-    public void setFolder(final Folder folder) {
-        this.folder = folder;
+    public void setUser(final User user) {
+        this.user = user;
     }
 
-    public Feed getFeed() {
-        return this.feed;
+    public String getUrl() {
+        return this.url;
     }
 
-    public void setFeed(final Feed feed) {
-        this.feed = feed;
+    public void setUrl(final String url) {
+        this.url = url;
     }
 
     public String getTitle() {
@@ -52,12 +53,12 @@ public class Subscription extends AbstractUserEntity {
         this.title = title;
     }
 
-    public Set<UserEntry> getUserEntries() {
-        return this.userEntries;
+    public Set<Entry> getEntries() {
+        return this.entries;
     }
 
-    public void setUserEntries(final Set<UserEntry> userEntries) {
-        this.userEntries = userEntries;
+    public void setEntries(final Set<Entry> entries) {
+        this.entries = entries;
     }
 
 }

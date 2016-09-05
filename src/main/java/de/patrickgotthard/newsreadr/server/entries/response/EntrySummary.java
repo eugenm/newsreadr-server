@@ -4,21 +4,13 @@ import java.util.Date;
 
 public class EntrySummary {
 
-    private Long id;
     private String subscription;
+    private Long id;
     private String url;
     private String title;
     private Date publishDate;
     private Boolean read;
     private Boolean bookmarked;
-
-    public Long getId() {
-        return this.id;
-    }
-
-    public void setId(final Long id) {
-        this.id = id;
-    }
 
     public String getSubscription() {
         return this.subscription;
@@ -26,6 +18,14 @@ public class EntrySummary {
 
     public void setSubscription(final String subscription) {
         this.subscription = subscription;
+    }
+
+    public Long getId() {
+        return this.id;
+    }
+
+    public void setId(final Long id) {
+        this.id = id;
     }
 
     public String getUrl() {

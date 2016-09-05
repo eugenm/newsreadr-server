@@ -18,17 +18,14 @@
         <angular-loading-bar.version>0.8.0</angular-loading-bar.version>
         <bootstrap.version>3.3.6</bootstrap.version>
         <commons-io.version>2.5</commons-io.version>
-        <dbunit.version>2.5.2</dbunit.version>
         <font-awesome.version>4.5.0</font-awesome.version>
         <html5shiv.version>3.7.3</html5shiv.version>
         <java.version>1.8</java.version>
         <jquery.version>1.11.3</jquery.version>
         <jsoup.version>1.9.2</jsoup.version>
-        <liquibase-slf4j.version>2.0.0</liquibase-slf4j.version>
         <querydsl.version>4.1.3</querydsl.version>
         <respond.version>1.4.2</respond.version>
         <rome.version>1.7.0</rome.version>
-        <spring-test-dbunit.version>1.3.0</spring-test-dbunit.version>
     </properties>
 
     <scm>
@@ -50,18 +47,6 @@
                             <outputDirectory>target/generated-sources/java</outputDirectory>
                             <processor>com.querydsl.apt.jpa.JPAAnnotationProcessor</processor>
                         </configuration>
-                    </execution>
-                </executions>
-            </plugin>
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-failsafe-plugin</artifactId>
-                <executions>
-                    <execution>
-                        <goals>
-                            <goal>integration-test</goal>
-                            <goal>verify</goal>
-                        </goals>
                     </execution>
                 </executions>
             </plugin>
@@ -112,23 +97,6 @@
             <version>${querydsl.version}</version>
         </dependency>
 
-        <!-- Liquibase -->
-        <dependency>
-            <groupId>org.liquibase</groupId>
-            <artifactId>liquibase-core</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>com.mattbertolini</groupId>
-            <artifactId>liquibase-slf4j</artifactId>
-            <version>${liquibase-slf4j.version}</version>
-        </dependency>
-
-        <!-- MySQL connector -->
-        <dependency>
-            <groupId>mysql</groupId>
-            <artifactId>mysql-connector-java</artifactId>
-        </dependency>
-
         <!-- Http Client -->
         <dependency>
             <groupId>org.apache.httpcomponents</groupId>
@@ -149,11 +117,17 @@
             <version>${jsoup.version}</version>
         </dependency>
 
-        <!-- Apache Commons -->
+        <!-- MySQL connector -->
         <dependency>
-            <groupId>commons-io</groupId>
-            <artifactId>commons-io</artifactId>
-            <version>${commons-io.version}</version>
+            <groupId>mysql</groupId>
+            <artifactId>mysql-connector-java</artifactId>
+            <scope>provided</scope>
+        </dependency>
+
+        <!-- Flyway -->
+        <dependency>
+            <groupId>org.flywaydb</groupId>
+            <artifactId>flyway-core</artifactId>
         </dependency>
 
         <!-- WebJARs -->
@@ -204,23 +178,6 @@
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-test</artifactId>
-            <scope>test</scope>
-        </dependency>
-        <dependency>
-            <groupId>com.github.springtestdbunit</groupId>
-            <artifactId>spring-test-dbunit</artifactId>
-            <version>${spring-test-dbunit.version}</version>
-            <scope>test</scope>
-        </dependency>
-        <dependency>
-            <groupId>org.dbunit</groupId>
-            <artifactId>dbunit</artifactId>
-            <version>${dbunit.version}</version>
-            <scope>test</scope>
-        </dependency>
-        <dependency>
-            <groupId>com.h2database</groupId>
-            <artifactId>h2</artifactId>
             <scope>test</scope>
         </dependency>
 

@@ -4,109 +4,105 @@ import static java.util.stream.Collectors.joining;
 import static java.util.stream.Collectors.toSet;
 
 import java.io.StringReader;
+import java.net.URI;
 import java.util.Date;
 import java.util.List;
 import java.util.Set;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
+import org.springframework.http.HttpHeaders;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Propagation;
-import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.client.RestTemplate;
 
-import com.querydsl.core.types.dsl.BooleanExpression;
 import com.rometools.rome.feed.synd.SyndContent;
 import com.rometools.rome.feed.synd.SyndEntry;
 import com.rometools.rome.feed.synd.SyndFeed;
+import com.rometools.rome.io.FeedException;
 import com.rometools.rome.io.SyndFeedInput;
 
 import de.patrickgotthard.newsreadr.server.common.persistence.entity.Entry;
-import de.patrickgotthard.newsreadr.server.common.persistence.entity.Feed;
-import de.patrickgotthard.newsreadr.server.common.persistence.entity.QFeed;
-import de.patrickgotthard.newsreadr.server.common.persistence.repository.FeedRepository;
+import de.patrickgotthard.newsreadr.server.common.persistence.entity.Subscription;
 import de.patrickgotthard.newsreadr.server.common.rest.ServerException;
 import de.patrickgotthard.newsreadr.server.common.util.StringUtil;
 
 @Service
 public class FeedService {
 
-    private static final Logger LOG = LoggerFactory.getLogger(FeedService.class);
-
     private static final int MAX_REDIRECTS = 5;
 
     private final RestTemplate restTemplate;
-    private final FeedRepository feedRepository;
 
     @Autowired
-    public FeedService(final RestTemplate restTemplate, final FeedRepository feedRepository) {
+    public FeedService(final RestTemplate restTemplate) {
         this.restTemplate = restTemplate;
-        this.feedRepository = feedRepository;
     }
 
-    public Feed fetch(final String feedUrl) {
+    public String getRealUrl(final String url) {
 
-        try {
+        String realUrl = url;
 
-            String location = feedUrl;
+        int redirects = 0;
 
-            ResponseEntity<String> entity = null;
-            for (int i = 0; i <= MAX_REDIRECTS; i++) {
+        while (true) {
 
-                entity = this.restTemplate.getForEntity(location, String.class);
+            final HttpHeaders headers = this.restTemplate.headForHeaders(realUrl);
+            final URI location = headers.getLocation();
 
-                final HttpStatus statusCode = entity.getStatusCode();
-                if (statusCode.is3xxRedirection()) {
-                    if (i == MAX_REDIRECTS) {
-                        throw new ServerException("Too many redirects");
-                    }
-                    location = entity.getHeaders().getFirst("Location");
-                } else {
-                    break;
-                }
-
+            if (location == null) {
+                break;
+            } else {
+                realUrl = location.getRawPath();
+                redirects++;
             }
 
-            final String content = entity.getBody();
-            final StringReader reader = new StringReader(content);
+            if (redirects > MAX_REDIRECTS) {
+                throw new ServerException("Too many redirects");
+            }
 
-            final SyndFeedInput input = new SyndFeedInput();
-            input.setAllowDoctypes(true);
-            final SyndFeed syndFeed = input.build(reader);
+        }
+        return realUrl;
 
-            return this.convertFeed(syndFeed, feedUrl);
+    }
 
+    public SyndFeed fetch(final String feedUrl) {
+        try {
+            final String body = this.restTemplate.getForObject(feedUrl, String.class);
+            return this.parseFeed(body);
         } catch (final Exception e) {
             throw new ServerException(e);
         }
-
-    }
-
-    @Transactional(propagation = Propagation.MANDATORY)
-    public void removeFeedsWithoutSubscribers() {
-        LOG.debug("Removing feed without subscribers");
-        final BooleanExpression filter = QFeed.feed.subscriptions.isEmpty();
-        final List<Feed> feeds = this.feedRepository.findAll(filter);
-        this.feedRepository.delete(feeds);
-        LOG.debug("Removed {} feeds without subscribers", feeds.size());
     }
 
     /**
-     * Converts a {@link SyndFeed} into a {@link Feed} object.
+     * Converts a {@link SyndFeed} into a {@link Subscription} object.
      *
      * @param syndFeed The {@link SyndFeed} to convert
      * @param feedUrl URL of the feed
      * @return The converted feed object
      */
-    private Feed convertFeed(final SyndFeed syndFeed, final String feedUrl) {
-        final Feed feed = new Feed();
-        feed.setUrl(feedUrl);
-        feed.setTitle(this.getTitle(syndFeed));
-        feed.setEntries(this.getEntries(syndFeed));
-        return feed;
+    public Subscription convertFeed(final SyndFeed syndFeed, final String realUrl) {
+        final Subscription subscription = new Subscription();
+        subscription.setUrl(realUrl);
+        subscription.setTitle(this.getTitle(syndFeed));
+        subscription.setEntries(this.getEntries(syndFeed));
+        return subscription;
+    }
+
+    /**
+     * Converts a Collection of {@link SyndEntry} into the corresponding {@link Entry} objects.
+     *
+     * @param syndEntries Collection of {@link SyndEntry} to convert
+     * @return The converted entries
+     */
+    public Set<Entry> getEntries(final SyndFeed syndFeed) {
+        return syndFeed.getEntries().parallelStream().map(this::convertEntry).collect(toSet());
+    }
+
+    private SyndFeed parseFeed(final String body) throws FeedException {
+        final StringReader reader = new StringReader(body);
+        final SyndFeedInput input = new SyndFeedInput();
+        input.setAllowDoctypes(true);
+        return input.build(reader);
     }
 
     /**
@@ -124,16 +120,6 @@ public class FeedService {
     }
 
     /**
-     * Converts a Collection of {@link SyndEntry} into the corresponding {@link Entry} objects.
-     *
-     * @param syndEntries Collection of {@link SyndEntry} to convert
-     * @return The converted entries
-     */
-    private Set<Entry> getEntries(final SyndFeed syndFeed) {
-        return syndFeed.getEntries().parallelStream().map(this::convertEntry).collect(toSet());
-    }
-
-    /**
      * Converts a {@link SyndEntry} into the corresponding {@link Entry} object.
      *
      * @param syndEntry The {@link SyndEntry} to convert
@@ -145,15 +131,15 @@ public class FeedService {
         entry.setUrl(syndEntry.getLink());
         entry.setTitle(syndEntry.getTitle());
         entry.setContent(this.getContent(syndEntry));
-        entry.setPublishDate(this.getPublishDate(syndEntry));
+        entry.setPublished(this.getPublishDate(syndEntry));
         return entry;
     }
 
     /**
-     * Extracts the content of a {@link SyndEntry}.
+     * Entracts the content of an entry. Some feeds doesn't offer content entries. In this case we will use the description.
      *
-     * @param syndEntry {@link SyndEntry} to extract the content from
-     * @return Content of the {@link SyndEntry}
+     * @param syndEntry The entry to get the content from
+     * @return Content of the entry (or description when the feed offers no contents)
      */
     private String getContent(final SyndEntry syndEntry) {
         final List<SyndContent> contents = syndEntry.getContents();
@@ -165,10 +151,10 @@ public class FeedService {
     }
 
     /**
-     * Extracts the publish date from a {@link SyndEntry}.
+     * Extracts the publish date from an entry. Sometimes feeds doesn't offer a publish date. In this case the update date will be used.
      *
-     * @param syndEntry The {@link SyndEntry} to extract the publish date from
-     * @return The publish date of the {@link SyndEntry} if existing. Otherwise returns the date of the last update.
+     * @param syndEntry Entry to get the publish date from
+     * @return Publish date (or update date when the feed does not offer publish dates)
      */
     private Date getPublishDate(final SyndEntry syndEntry) {
         Date publishDate = syndEntry.getPublishedDate();

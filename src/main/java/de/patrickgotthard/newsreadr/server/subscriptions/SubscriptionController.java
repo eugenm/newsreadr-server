@@ -3,7 +3,6 @@ package de.patrickgotthard.newsreadr.server.subscriptions;
 import java.io.IOException;
 import java.util.List;
 
-import javax.servlet.ServletOutputStream;
 import javax.servlet.http.HttpServletResponse;
 import javax.validation.Valid;
 import javax.xml.bind.JAXBException;
@@ -15,7 +14,6 @@ import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.multipart.MultipartFile;
 
-import de.patrickgotthard.newsreadr.server.common.util.IOUtil;
 import de.patrickgotthard.newsreadr.server.subscriptions.request.AddSubscriptionRequest;
 import de.patrickgotthard.newsreadr.server.subscriptions.request.RemoveSubscriptionRequest;
 import de.patrickgotthard.newsreadr.server.subscriptions.request.UpdateSubscriptionRequest;
@@ -56,7 +54,6 @@ class SubscriptionController {
         this.subscriptionService.removeSubscription(request, currentUserId);
     }
 
-    // TODO return import summary
     @RequestMapping(value = "/import", method = RequestMethod.POST)
     @ResponseBody
     public List<String> importSubscriptions(final MultipartFile opmlFile, final long currentUserId) {
@@ -67,15 +64,11 @@ class SubscriptionController {
     public void exportSubscriptions(final HttpServletResponse response, final long currentUserId) throws JAXBException, IOException {
 
         final String opml = this.subscriptionService.exportSubscriptions(currentUserId);
-        final int contentLength = opml.getBytes().length;
 
         response.setHeader("Content-Disposition", "attachment; filename=\"newsreadr.opml\"");
         response.setContentType("application/xml");
-        response.setContentLength(contentLength);
-
-        final ServletOutputStream outputStream = response.getOutputStream();
-        IOUtil.write(opml, outputStream);
-        outputStream.flush();
+        response.setContentLength(opml.getBytes().length);
+        response.getOutputStream().print(opml);
 
     }
 

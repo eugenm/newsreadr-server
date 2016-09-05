@@ -11,9 +11,6 @@ public class UpdateSubscriptionRequest {
     @Min(1)
     private Long subscriptionId;
 
-    @Min(1)
-    private Long folderId;
-
     private String title;
 
     public Long getSubscriptionId() {
@@ -22,14 +19,6 @@ public class UpdateSubscriptionRequest {
 
     public void setSubscriptionId(final Long subscriptionId) {
         this.subscriptionId = subscriptionId;
-    }
-
-    public Long getFolderId() {
-        return this.folderId;
-    }
-
-    public void setFolderId(final Long folderId) {
-        this.folderId = folderId;
     }
 
     public String getTitle() {

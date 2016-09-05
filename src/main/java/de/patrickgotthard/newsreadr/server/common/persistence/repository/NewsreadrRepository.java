@@ -2,6 +2,7 @@ package de.patrickgotthard.newsreadr.server.common.persistence.repository;
 
 import java.util.List;
 
+import org.springframework.data.domain.Sort;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.querydsl.QueryDslPredicateExecutor;
 import org.springframework.data.repository.NoRepositoryBean;
@@ -19,5 +20,11 @@ interface NewsreadrRepository<T extends AbstractEntity> extends JpaRepository<T,
 
     @Override
     List<T> findAll(Predicate predicate, OrderSpecifier<?>... orders);
+
+    @Override
+    List<T> findAll(OrderSpecifier<?>... orders);
+
+    @Override
+    List<T> findAll(Predicate predicate, Sort sort);
 
 }

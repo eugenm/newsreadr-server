@@ -2,6 +2,7 @@ package de.patrickgotthard.newsreadr.server.common.persistence.entity;
 
 import java.util.Set;
 
+import javax.persistence.AttributeOverride;
 import javax.persistence.CascadeType;
 import javax.persistence.Column;
 import javax.persistence.Entity;
@@ -12,6 +13,7 @@ import javax.persistence.Table;
 
 @Entity
 @Table(name = "users")
+@AttributeOverride(name = "id", column = @Column(name = "user_id"))
 public class User extends AbstractEntity {
 
     @Column(name = "username")
@@ -23,9 +25,6 @@ public class User extends AbstractEntity {
     @Column(name = "role")
     @Enumerated(EnumType.STRING)
     private Role role;
-
-    @OneToMany(mappedBy = "user", cascade = CascadeType.REMOVE)
-    private Set<Folder> folders;
 
     @OneToMany(mappedBy = "user", cascade = CascadeType.REMOVE)
     private Set<Subscription> subscriptions;
@@ -52,14 +51,6 @@ public class User extends AbstractEntity {
 
     public void setRole(final Role role) {
         this.role = role;
-    }
-
-    public Set<Folder> getFolders() {
-        return this.folders;
-    }
-
-    public void setFolders(final Set<Folder> folders) {
-        this.folders = folders;
     }
 
     public Set<Subscription> getSubscriptions() {

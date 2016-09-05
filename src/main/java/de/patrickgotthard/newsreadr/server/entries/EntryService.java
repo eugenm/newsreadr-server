@@ -7,15 +7,15 @@ import org.jsoup.safety.Whitelist;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.querydsl.core.BooleanBuilder;
 
-import de.patrickgotthard.newsreadr.server.common.persistence.entity.QUserEntry;
-import de.patrickgotthard.newsreadr.server.common.persistence.entity.UserEntry;
-import de.patrickgotthard.newsreadr.server.common.persistence.repository.UserEntryRepository;
+import de.patrickgotthard.newsreadr.server.common.persistence.entity.Entry;
+import de.patrickgotthard.newsreadr.server.common.persistence.entity.QEntry;
+import de.patrickgotthard.newsreadr.server.common.persistence.entity.QSubscription;
+import de.patrickgotthard.newsreadr.server.common.persistence.repository.EntryRepository;
 import de.patrickgotthard.newsreadr.server.common.rest.NotFoundException;
 import de.patrickgotthard.newsreadr.server.common.rest.ServerException;
 import de.patrickgotthard.newsreadr.server.entries.request.AddBookmarkRequest;
@@ -33,61 +33,25 @@ class EntryService {
 
     private static final Logger LOG = LoggerFactory.getLogger(EntryService.class);
 
-    private final UserEntryRepository userEntryRepository;
+    private final EntryRepository entryRepository;
     private final EntryDAO entryDAO;
 
     @Autowired
-    public EntryService(final UserEntryRepository userEntryRepository, final EntryDAO entryDAO) {
-        this.userEntryRepository = userEntryRepository;
+    public EntryService(final EntryRepository entryRepository, final EntryDAO entryDAO) {
+        this.entryRepository = entryRepository;
         this.entryDAO = entryDAO;
     }
 
     @Transactional(readOnly = true)
     public GetEntriesResponse getEntries(final GetEntriesRequest request, final long currentUserId) {
 
-        LOG.debug("Getting entries: {}", request);
-
-        final QUserEntry userEntry = QUserEntry.userEntry;
-
-        final BooleanBuilder query = new BooleanBuilder();
-        query.and(userEntry.subscription.user.id.eq(currentUserId));
-
-        final Type type = request.getType();
-        switch (type) {
-            case ALL:
-                // no filter to apply
-                break;
-            case BOOKMARKS:
-                query.and(userEntry.bookmarked.isTrue());
-                break;
-            case FOLDER:
-                query.and(userEntry.subscription.folder.id.eq(request.getId()));
-                break;
-            case SUBSCRIPTION:
-                query.and(userEntry.subscription.id.eq(request.getId()));
-                break;
-            default:
-                throw new ServerException("Unknown feed type: " + type);
-        }
-
-        final Long latestEntryId = request.getLatestEntryId();
-        if (latestEntryId != null) {
-            query.and(userEntry.id.loe(latestEntryId));
-        }
-
-        final boolean unreadOnly = request.getUnreadOnly();
-        if (unreadOnly) {
-            query.and(userEntry.read.isFalse());
-        }
-
-        final Long newLatestEntry = this.entryDAO.getLatestEntryId(currentUserId);
-
-        final int page = request.getPage();
-        final PageRequest pageRequest = new PageRequest(page, 50);
-        final List<EntrySummary> entries = this.entryDAO.findEntries(query, pageRequest);
+        LOG.debug("Loading entries: {}", request);
+        final Long latestEntryId = this.entryDAO.getLatestEntryId(currentUserId);
+        final List<EntrySummary> entries = this.entryDAO.findEntries(request, currentUserId);
+        LOG.debug("Loaded entries");
 
         final GetEntriesResponse response = new GetEntriesResponse();
-        response.setLatestEntryId(newLatestEntry);
+        response.setLatestEntryId(latestEntryId);
         response.setEntries(entries);
         return response;
 
@@ -99,19 +63,19 @@ class EntryService {
         LOG.debug("Getting entry: {}", request);
 
         final BooleanBuilder filter = new BooleanBuilder();
-        filter.and(QUserEntry.userEntry.id.eq(request.getUserEntryId()));
-        filter.and(QUserEntry.userEntry.subscription.user.id.eq(currentUserId));
+        filter.and(QEntry.entry.id.eq(request.getUserEntryId()));
+        filter.and(QEntry.entry.subscription.user.id.eq(currentUserId));
 
-        final UserEntry userEntry = this.userEntryRepository.findOne(filter);
-        if (userEntry == null) {
+        final Entry entry = this.entryRepository.findOne(filter);
+        if (entry == null) {
             throw new NotFoundException("The requested entry does not exist");
         }
 
         // mark as read
-        userEntry.setRead(true);
-        this.userEntryRepository.save(userEntry);
+        entry.setRead(true);
+        this.entryRepository.save(entry);
 
-        final String content = userEntry.getEntry().getContent();
+        final String content = entry.getContent();
 
         final Whitelist whitelist = Whitelist.relaxed();
         whitelist.addTags("figure", "figcaption");
@@ -127,12 +91,13 @@ class EntryService {
 
         LOG.debug("Marking entries as read: {}", request);
 
-        final QUserEntry userEntry = QUserEntry.userEntry;
+        final QEntry entry = QEntry.entry;
+        final QSubscription subscription = entry.subscription;
 
-        final BooleanBuilder query = new BooleanBuilder();
-        query.and(userEntry.subscription.user.id.eq(currentUserId));
-        query.and(userEntry.read.isFalse());
-        query.and(userEntry.id.loe(request.getLatestEntryId()));
+        final BooleanBuilder filter = new BooleanBuilder();
+        filter.and(subscription.user.id.eq(currentUserId));
+        filter.and(entry.read.isFalse());
+        filter.and(entry.id.loe(request.getLatestEntryId()));
 
         final Type type = request.getType();
         switch (type) {
@@ -140,23 +105,20 @@ class EntryService {
                 // no filter to apply
                 break;
             case BOOKMARKS:
-                query.and(userEntry.bookmarked.isTrue());
-                break;
-            case FOLDER:
-                query.and(userEntry.subscription.folder.id.eq(request.getId()));
+                filter.and(entry.bookmarked.isTrue());
                 break;
             case SUBSCRIPTION:
-                query.and(userEntry.subscription.id.eq(request.getId()));
+                filter.and(subscription.id.eq(request.getId()));
                 break;
             default:
                 throw new ServerException("Unknown feed type: " + type);
         }
 
-        final List<UserEntry> entries = this.userEntryRepository.findAll(query);
-        for (final UserEntry entry : entries) {
-            entry.setRead(true);
+        final List<Entry> entries = this.entryRepository.findAll(filter);
+        for (final Entry curEntry : entries) {
+            curEntry.setRead(true);
         }
-        this.userEntryRepository.save(entries);
+        this.entryRepository.save(entries);
 
     }
 
@@ -179,15 +141,15 @@ class EntryService {
     private void toggleBookmark(final long userEntryId, final boolean bookmark, final long currentUserId) {
 
         final BooleanBuilder filter = new BooleanBuilder();
-        filter.and(QUserEntry.userEntry.id.eq(userEntryId));
-        filter.and(QUserEntry.userEntry.subscription.user.id.eq(currentUserId));
+        filter.and(QEntry.entry.id.eq(userEntryId));
+        filter.and(QEntry.entry.subscription.user.id.eq(currentUserId));
 
-        final UserEntry userEntry = this.userEntryRepository.findOne(filter);
-        if (userEntry == null) {
+        final Entry entry = this.entryRepository.findOne(filter);
+        if (entry == null) {
             throw new NotFoundException("The requested entry does not exist");
         } else {
-            userEntry.setBookmarked(bookmark);
-            this.userEntryRepository.save(userEntry);
+            entry.setBookmarked(bookmark);
+            this.entryRepository.save(entry);
         }
 
     }

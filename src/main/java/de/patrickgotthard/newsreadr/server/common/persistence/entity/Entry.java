@@ -1,23 +1,22 @@
 package de.patrickgotthard.newsreadr.server.common.persistence.entity;
 
 import java.util.Date;
-import java.util.Set;
 
-import javax.persistence.CascadeType;
+import javax.persistence.AttributeOverride;
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
-import javax.persistence.OneToMany;
 import javax.persistence.Table;
 
 @Entity
 @Table(name = "entries")
+@AttributeOverride(name = "id", column = @Column(name = "entry_id"))
 public class Entry extends AbstractEntity {
 
     @ManyToOne
-    @JoinColumn(name = "feed_id")
-    private Feed feed;
+    @JoinColumn(name = "subscription_id")
+    private Subscription subscription;
 
     @Column(name = "uri")
     private String uri;
@@ -31,18 +30,21 @@ public class Entry extends AbstractEntity {
     @Column(name = "content")
     private String content;
 
-    @Column(name = "publish_date")
-    private Date publishDate;
+    @Column(name = "published")
+    private Date published;
 
-    @OneToMany(mappedBy = "entry", cascade = CascadeType.REMOVE)
-    private Set<UserEntry> userEntries;
+    @Column(name = "`read`")
+    private Boolean read = false;
 
-    public Feed getFeed() {
-        return this.feed;
+    @Column(name = "bookmarked")
+    private Boolean bookmarked = false;
+
+    public Subscription getSubscription() {
+        return this.subscription;
     }
 
-    public void setFeed(final Feed feed) {
-        this.feed = feed;
+    public void setSubscription(final Subscription subscription) {
+        this.subscription = subscription;
     }
 
     public String getUri() {
@@ -77,20 +79,28 @@ public class Entry extends AbstractEntity {
         this.content = content;
     }
 
-    public Date getPublishDate() {
-        return this.publishDate;
+    public Date getPublished() {
+        return this.published;
     }
 
-    public void setPublishDate(final Date publishDate) {
-        this.publishDate = publishDate;
+    public void setPublished(final Date published) {
+        this.published = published;
     }
 
-    public Set<UserEntry> getUserEntries() {
-        return this.userEntries;
+    public Boolean getRead() {
+        return this.read;
     }
 
-    public void setUserEntries(final Set<UserEntry> userEntries) {
-        this.userEntries = userEntries;
+    public void setRead(final Boolean read) {
+        this.read = read;
+    }
+
+    public Boolean getBookmarked() {
+        return this.bookmarked;
+    }
+
+    public void setBookmarked(final Boolean bookmarked) {
+        this.bookmarked = bookmarked;
     }
 
 }
