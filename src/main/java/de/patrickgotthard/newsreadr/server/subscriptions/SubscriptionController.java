@@ -1,6 +1,7 @@
 package de.patrickgotthard.newsreadr.server.subscriptions;
 
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
 import java.util.List;
 
 import javax.servlet.http.HttpServletResponse;
@@ -68,7 +69,7 @@ class SubscriptionController {
         response.setHeader("Content-Disposition", "attachment; filename=\"newsreadr.opml\"");
         response.setContentType("application/xml");
         response.setContentLength(opml.getBytes().length);
-        response.getOutputStream().print(opml);
+        response.getOutputStream().write(opml.getBytes(StandardCharsets.UTF_8));
 
     }
 

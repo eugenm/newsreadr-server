@@ -5,16 +5,13 @@ import static java.util.stream.Collectors.toList;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.StringWriter;
-import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import java.util.Set;
 
+import javax.xml.bind.DataBindingException;
 import javax.xml.bind.JAXB;
-import javax.xml.bind.JAXBContext;
-import javax.xml.bind.JAXBException;
-import javax.xml.bind.Marshaller;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -83,13 +80,12 @@ class SubscriptionService {
 
             // fetch feed
             final String url = request.getUrl();
-            final String realUrl = this.feedService.getRealUrl(url);
-            final SyndFeed syndFeed = this.feedService.fetch(realUrl);
+            final SyndFeed syndFeed = this.feedService.fetch(url);
 
             // check whether the subscription already exists
             final BooleanBuilder existsFilter = new BooleanBuilder();
             existsFilter.and(QSubscription.subscription.user.id.eq(currentUserId));
-            existsFilter.and(QSubscription.subscription.url.eq(realUrl));
+            existsFilter.and(QSubscription.subscription.url.eq(url));
 
             final boolean exists = this.subscriptionRepository.exists(existsFilter);
             if (exists) {
@@ -100,7 +96,7 @@ class SubscriptionService {
             final User currentUser = this.userRepository.findOne(currentUserId);
 
             // persist subscription
-            final Subscription feed = this.feedService.convertFeed(syndFeed, realUrl);
+            final Subscription feed = this.feedService.convertFeed(syndFeed, url);
             feed.setUser(currentUser);
             final String title = request.getTitle();
             if (StringUtil.isNotBlank(title)) {
@@ -264,29 +260,22 @@ class SubscriptionService {
 
         try {
 
-            final JAXBContext context = JAXBContext.newInstance(Opml.class);
-            final Marshaller marshaller = context.createMarshaller();
-            marshaller.setProperty(Marshaller.JAXB_ENCODING, StandardCharsets.UTF_8.name());
-            marshaller.setProperty(Marshaller.JAXB_FORMATTED_OUTPUT, true);
-
             final StringWriter stringWriter = new StringWriter();
-            marshaller.marshal(opml, stringWriter);
+            JAXB.marshal(opml, stringWriter);
             return stringWriter.toString();
 
-        } catch (final JAXBException e) {
+        } catch (final DataBindingException e) {
             throw new ServerException("Unable to export subscriptions", e);
         }
 
     }
 
     private Opml parseOpml(final MultipartFile opmlFile) {
-        final InputStream input;
-        try {
-            input = opmlFile.getInputStream();
+        try (InputStream input = opmlFile.getInputStream()) {
+            return JAXB.unmarshal(input, Opml.class);
         } catch (final IOException e) {
             throw new ServerException(e);
         }
-        return JAXB.unmarshal(input, Opml.class);
     }
 
     private Collection<Outline> getRelevantOutlines(final Collection<Outline> outlines) {
