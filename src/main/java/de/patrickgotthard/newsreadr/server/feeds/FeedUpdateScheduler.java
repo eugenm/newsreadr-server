@@ -34,7 +34,7 @@ class FeedUpdateScheduler {
 
     @Autowired
     public FeedUpdateScheduler(final SubscriptionRepository subscriptionRepository, final EntryRepository entryRepository, final FeedService feedService,
-        final TransactionHelper transactionHelper) {
+            final TransactionHelper transactionHelper) {
         this.subscriptionRepository = subscriptionRepository;
         this.entryRepository = entryRepository;
         this.feedService = feedService;
@@ -87,7 +87,7 @@ class FeedUpdateScheduler {
 
         } catch (final Exception e) {
 
-            LOG.info("An error occured while updating feed: {}", url);
+            LOG.debug("An error occured while updating feed: " + url, e);
 
         }
 
