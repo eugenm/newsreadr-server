@@ -1,6 +1,6 @@
 package de.patrickgotthard.newsreadr.server.common.persistence.entity;
 
-import java.util.Date;
+import java.time.LocalDateTime;
 
 import javax.persistence.AttributeOverride;
 import javax.persistence.Column;
@@ -31,7 +31,7 @@ public class Entry extends AbstractEntity {
     private String content;
 
     @Column(name = "published")
-    private Date published;
+    private LocalDateTime published;
 
     @Column(name = "`read`")
     private Boolean read = false;
@@ -79,11 +79,11 @@ public class Entry extends AbstractEntity {
         this.content = content;
     }
 
-    public Date getPublished() {
+    public LocalDateTime getPublished() {
         return this.published;
     }
 
-    public void setPublished(final Date published) {
+    public void setPublished(final LocalDateTime published) {
         this.published = published;
     }
 

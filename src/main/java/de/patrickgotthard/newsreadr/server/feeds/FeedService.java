@@ -4,6 +4,7 @@ import static java.util.stream.Collectors.joining;
 import static java.util.stream.Collectors.toSet;
 
 import java.io.StringReader;
+import java.time.LocalDateTime;
 import java.util.Date;
 import java.util.List;
 import java.util.Set;
@@ -21,6 +22,7 @@ import com.rometools.rome.io.SyndFeedInput;
 import de.patrickgotthard.newsreadr.server.common.persistence.entity.Entry;
 import de.patrickgotthard.newsreadr.server.common.persistence.entity.Subscription;
 import de.patrickgotthard.newsreadr.server.common.rest.ServerException;
+import de.patrickgotthard.newsreadr.server.common.util.DateUtil;
 import de.patrickgotthard.newsreadr.server.common.util.StringUtil;
 
 @Service
@@ -33,17 +35,30 @@ public class FeedService {
         this.restTemplate = restTemplate;
     }
 
+    /**
+     * Fetches and parses a feed.
+     *
+     * @param url URL of the feed to fetch
+     * @return Parsed feed
+     */
     public SyndFeed fetch(final String url) {
         try {
-            final String body = this.restTemplate.getForObject(url, String.class);
-            return this.parseFeed(body);
+            final String xml = this.restTemplate.getForObject(url, String.class);
+            return this.parseFeed(xml);
         } catch (final Exception e) {
             throw new ServerException(e);
         }
     }
 
-    private SyndFeed parseFeed(final String body) throws FeedException {
-        final StringReader reader = new StringReader(body);
+    /**
+     * Parses a feed.
+     *
+     * @param xml The XML to parse
+     * @return Parsed Feed
+     * @throws FeedException when parsing the feed failed
+     */
+    private SyndFeed parseFeed(final String xml) throws FeedException {
+        final StringReader reader = new StringReader(xml);
         final SyndFeedInput input = new SyndFeedInput();
         input.setAllowDoctypes(true);
         return input.build(reader);
@@ -54,7 +69,7 @@ public class FeedService {
      *
      * @param syndFeed The {@link SyndFeed} to convert
      * @param url URL of the feed
-     * @return The converted feed object
+     * @return The feed as subscription
      */
     public Subscription convertFeed(final SyndFeed syndFeed, final String url) {
         final Subscription subscription = new Subscription();
@@ -65,9 +80,9 @@ public class FeedService {
     }
 
     /**
-     * Converts a Collection of {@link SyndEntry} into the corresponding {@link Entry} objects.
+     * Extracts the entries of a feed.
      *
-     * @param syndEntries Collection of {@link SyndEntry} to convert
+     * @param syndFeed The feed to get the entries from
      * @return The converted entries
      */
     public Set<Entry> getEntries(final SyndFeed syndFeed) {
@@ -77,8 +92,8 @@ public class FeedService {
     /**
      * Extract the title of the feed.
      *
-     * @param syndFeed The {@link SyndFeed} to extract the title from
-     * @return The title of the {@link SyndFeed} when existing. Otherwise returns the URL of the feed
+     * @param syndFeed The feed to extract the title from
+     * @return The title of the feed when existing, otherwise the URL of the feed
      */
     private String getTitle(final SyndFeed syndFeed) {
         String title = syndFeed.getTitle();
@@ -105,10 +120,10 @@ public class FeedService {
     }
 
     /**
-     * Entracts the content of an entry. Some feeds doesn't offer content entries. In this case we will use the description.
+     * Entracts the content of an entry. Some feeds doesn't offer contents. In this case the description will be used.
      *
      * @param syndEntry The entry to get the content from
-     * @return Content of the entry (or description when the feed offers no contents)
+     * @return Content of the entry when existing, otherwise the description
      */
     private String getContent(final SyndEntry syndEntry) {
         final List<SyndContent> contents = syndEntry.getContents();
@@ -123,14 +138,14 @@ public class FeedService {
      * Extracts the publish date from an entry. Sometimes feeds doesn't offer a publish date. In this case the update date will be used.
      *
      * @param syndEntry Entry to get the publish date from
-     * @return Publish date (or update date when the feed does not offer publish dates)
+     * @return Publish date when existing, otherwise the update date
      */
-    private Date getPublishDate(final SyndEntry syndEntry) {
+    private LocalDateTime getPublishDate(final SyndEntry syndEntry) {
         Date publishDate = syndEntry.getPublishedDate();
         if (publishDate == null) {
             publishDate = syndEntry.getUpdatedDate();
         }
-        return publishDate;
+        return DateUtil.toLocalDateTime(publishDate);
     }
 
 }

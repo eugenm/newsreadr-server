@@ -1,6 +1,6 @@
 package de.patrickgotthard.newsreadr.server.entries.response;
 
-import java.util.Date;
+import java.time.LocalDateTime;
 
 public class EntrySummary {
 
@@ -8,7 +8,7 @@ public class EntrySummary {
     private Long id;
     private String url;
     private String title;
-    private Date publishDate;
+    private LocalDateTime publishDate;
     private Boolean read;
     private Boolean bookmarked;
 
@@ -44,11 +44,11 @@ public class EntrySummary {
         this.title = title;
     }
 
-    public Date getPublishDate() {
+    public LocalDateTime getPublishDate() {
         return this.publishDate;
     }
 
-    public void setPublishDate(final Date publishDate) {
+    public void setPublishDate(final LocalDateTime publishDate) {
         this.publishDate = publishDate;
     }
 

@@ -2,7 +2,7 @@ package de.patrickgotthard.newsreadr.server.entries;
 
 import static java.util.stream.Collectors.toList;
 
-import java.util.Date;
+import java.time.LocalDateTime;
 import java.util.List;
 
 import javax.persistence.EntityManager;
@@ -47,7 +47,7 @@ class EntryDAO {
         final NumberPath<Long> id = entry.id;
         final StringPath url = entry.url;
         final StringPath title = entry.title;
-        final DateTimePath<Date> published = entry.published;
+        final DateTimePath<LocalDateTime> published = entry.published;
         final BooleanPath read = entry.read;
         final BooleanPath bookmarked = entry.bookmarked;
 
