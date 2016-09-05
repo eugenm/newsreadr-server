@@ -4,13 +4,11 @@ import static java.util.stream.Collectors.joining;
 import static java.util.stream.Collectors.toSet;
 
 import java.io.StringReader;
-import java.net.URI;
 import java.util.Date;
 import java.util.List;
 import java.util.Set;
 
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpHeaders;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 
@@ -28,8 +26,6 @@ import de.patrickgotthard.newsreadr.server.common.util.StringUtil;
 @Service
 public class FeedService {
 
-    private static final int MAX_REDIRECTS = 5;
-
     private final RestTemplate restTemplate;
 
     @Autowired
@@ -37,52 +33,32 @@ public class FeedService {
         this.restTemplate = restTemplate;
     }
 
-    public String getRealUrl(final String url) {
-
-        String realUrl = url;
-
-        int redirects = 0;
-
-        while (true) {
-
-            final HttpHeaders headers = this.restTemplate.headForHeaders(realUrl);
-            final URI location = headers.getLocation();
-
-            if (location == null) {
-                break;
-            } else {
-                realUrl = location.getRawPath();
-                redirects++;
-            }
-
-            if (redirects > MAX_REDIRECTS) {
-                throw new ServerException("Too many redirects");
-            }
-
-        }
-        return realUrl;
-
-    }
-
-    public SyndFeed fetch(final String feedUrl) {
+    public SyndFeed fetch(final String url) {
         try {
-            final String body = this.restTemplate.getForObject(feedUrl, String.class);
+            final String body = this.restTemplate.getForObject(url, String.class);
             return this.parseFeed(body);
         } catch (final Exception e) {
             throw new ServerException(e);
         }
     }
 
+    private SyndFeed parseFeed(final String body) throws FeedException {
+        final StringReader reader = new StringReader(body);
+        final SyndFeedInput input = new SyndFeedInput();
+        input.setAllowDoctypes(true);
+        return input.build(reader);
+    }
+
     /**
      * Converts a {@link SyndFeed} into a {@link Subscription} object.
      *
      * @param syndFeed The {@link SyndFeed} to convert
-     * @param feedUrl URL of the feed
+     * @param url URL of the feed
      * @return The converted feed object
      */
-    public Subscription convertFeed(final SyndFeed syndFeed, final String realUrl) {
+    public Subscription convertFeed(final SyndFeed syndFeed, final String url) {
         final Subscription subscription = new Subscription();
-        subscription.setUrl(realUrl);
+        subscription.setUrl(url);
         subscription.setTitle(this.getTitle(syndFeed));
         subscription.setEntries(this.getEntries(syndFeed));
         return subscription;
@@ -96,13 +72,6 @@ public class FeedService {
      */
     public Set<Entry> getEntries(final SyndFeed syndFeed) {
         return syndFeed.getEntries().parallelStream().map(this::convertEntry).collect(toSet());
-    }
-
-    private SyndFeed parseFeed(final String body) throws FeedException {
-        final StringReader reader = new StringReader(body);
-        final SyndFeedInput input = new SyndFeedInput();
-        input.setAllowDoctypes(true);
-        return input.build(reader);
     }
 
     /**
