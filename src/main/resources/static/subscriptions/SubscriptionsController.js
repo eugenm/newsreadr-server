@@ -1,4 +1,4 @@
-newsreadrControllers.controller('SubscriptionsController', ['$scope', '$http',
+controllers.controller('SubscriptionsController', ['$scope', '$http',
 
     function($scope, $http) {
 		

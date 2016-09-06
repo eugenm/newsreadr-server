@@ -33,7 +33,7 @@ class SecurityConfig extends WebSecurityConfigurerAdapter {
         // @formatter:off
         http
             .authorizeRequests()
-                .antMatchers("/css/**", "/js/**", "/lib/**", "/webjars/**", "/favicon.ico", "/login").permitAll()
+                .regexMatchers(".+\\.(css|js|ico)", "/login").permitAll()
                 .anyRequest().authenticated()
                 .and()
             .httpBasic()

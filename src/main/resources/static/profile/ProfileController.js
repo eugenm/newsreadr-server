@@ -1,4 +1,4 @@
-newsreadrControllers.controller('ProfileController', ['$scope', '$http', function($scope, $http) {
+controllers.controller('ProfileController', ['$scope', '$http', function($scope, $http) {
 
     $scope.userId = null;
     $scope.username = null;
@@ -15,9 +15,9 @@ newsreadrControllers.controller('ProfileController', ['$scope', '$http', functio
     $scope.updateAccount = function() {
         if ($scope.newPassword == $scope.verifyPassword) {
             $http.put('api/users/' + $scope.userId, {
-                params : {
-                    username : $scope.username,
-                    password : $scope.newPassword
+                params: {
+                    username: $scope.username,
+                    password: $scope.newPassword
                 }
             }).success(function(response) {
                 window.location.replace('login?newCredentials');

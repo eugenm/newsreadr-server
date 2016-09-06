@@ -1,4 +1,4 @@
-newsreadrControllers.controller('UsersController', ['$scope', '$http',
+controllers.controller('UsersController', ['$scope', '$http',
 
     function($scope, $http) {
 
@@ -14,7 +14,7 @@ newsreadrControllers.controller('UsersController', ['$scope', '$http',
 		// load users
 		$scope.loadUsers = function() {
 			$http.get('api/users').success(function(users) {
-				$scope.users = users;
+				$scope.users = users; 
 			});
 		};
 		

@@ -10,8 +10,7 @@
 		<link rel="stylesheet" href="webjars/font-awesome/4.5.0/css/font-awesome.min.css" />
 		<link rel="stylesheet" href="webjars/bootstrap/3.3.6/css/bootstrap.min.css" />
 		<link rel="stylesheet" href="webjars/bootstrap/3.3.6/css/bootstrap-theme.min.css" />
-		<link rel="stylesheet" href="css/non-responsive.css" />
-		<link rel="stylesheet" href="css/app.css" />
+		<link rel="stylesheet" href="Application.css" />
 		<!--[if lt IE 9]>
 			<script src="webjars/html5shiv/3.7.3/html5shiv.js"></script>
 			<script src="webjars/respond/1.4.2/dest/respond.min.js"></script>
@@ -22,15 +21,15 @@
 		<script src="webjars/angularjs/1.4.8/angular-route.min.js"></script>
 		<script src="webjars/angularjs/1.4.8/angular-sanitize.min.js"></script>
         <script src="webjars/angular-loading-bar/0.8.0/loading-bar.min.js"></script>
-		<script src="lib/angular/ng-infinite-scroll.min.js"></script>
-		<script src="lib/angular/ng-upload.min.js"></script>
-		<script src="js/app.js"></script>
-		<script src="js/entries-controller.js"></script>
-		<script src="js/profile-controller.js"></script>
-		<script src="js/subscriptions-controller.js"></script>
-		<script src="js/users-controller.js"></script>
+		<script src="common/lib/angular/ng-infinite-scroll.min.js"></script>
+		<script src="common/lib/angular/ng-upload.min.js"></script>
+		<script src="Application.js"></script>
+		<script src="entries/EntriesController.js"></script>
+		<script src="profile/ProfileController.js"></script>
+		<script src="subscriptions/SubscriptionsController.js"></script>
+		<script src="users/UsersController.js"></script>
 	</head>
-	<body ng-app="newsreadrApp">
+	<body ng-app="app">
 		<div ng-view=""></div>
 	</body>
 </html>
