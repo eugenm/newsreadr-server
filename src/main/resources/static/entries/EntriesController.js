@@ -1,6 +1,4 @@
-controllers.controller('EntriesController', ['$scope', '$http', '$anchorScroll',
-
-function($scope, $http, $anchorScroll) {
+controllers.controller('EntriesController', ['$scope', '$http', '$anchorScroll', function($scope, $http, $anchorScroll) {
 
     // entry filter
     $scope.type = 'ALL';
@@ -148,6 +146,4 @@ function($scope, $http, $anchorScroll) {
         }
     };
 
-}
-
-]);
+}]);
