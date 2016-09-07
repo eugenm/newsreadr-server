@@ -7,6 +7,6 @@ node {
    sh './mvnw clean install'
    
    stage 'Archive artifact'
-   archiveArtifacts artifacts: 'target/newsreadr-server*.jar', fingerprint: true
+   step([$class: 'ArtifactArchiver', artifacts: 'target/newsreadr-server*.jar', fingerprint: true])
 
 }
