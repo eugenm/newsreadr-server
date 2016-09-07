@@ -5,10 +5,9 @@ newsreadr is a web based [RSS](http://en.wikipedia.org/wiki/RSS) and [Atom](http
 ## Building
 
 1. Install [Java 8 Development Kit](http://www.oracle.com/technetwork/java/javase/downloads/index.html)
-2. Install [Maven 3](http://maven.apache.org)
-3. Clone sourcecode
-4. Execute ```mvn clean install```
-5. The target JAR file can be found under target/newsreadr-server.jar
+2. Clone sourcecode
+3. Execute ```./mvnw clean install``` on Unix or ```mvnw clean install``` on Windows
+4. The target JAR file can be found under target/newsreadr-server.jar
 
 ## Installation
 
@@ -20,5 +19,5 @@ newsreadr is a web based [RSS](http://en.wikipedia.org/wiki/RSS) and [Atom](http
 6. Start the application by executing ```java -jar newsreadr-server.jar```
 7. Start your browser, open **http://server:8080** (where server is the name or IP of your computer) and log in with username **admin** and password **password** (please change it immediately).
 
-If you want to install newsreadr as a linux service, have a look at section [55.1 Unix/Linux services](http://docs.spring.io/spring-boot/docs/current/reference/html/deployment-install.html#deployment-service) 
+If you want to install newsreadr as a linux service, have a look at section [Unix/Linux services](http://docs.spring.io/spring-boot/docs/current/reference/html/deployment-install.html#deployment-service) 
 of the official Spring Boot documentation. 
