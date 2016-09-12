@@ -12,7 +12,7 @@ newsreadr is a web based [RSS](http://en.wikipedia.org/wiki/RSS) and [Atom](http
 ## Installation
 
 1. Install [Java 8 Runtime Environment](http://www.oracle.com/technetwork/java/javase/downloads/index.html)
-2. Setup a new database by executing ```CREATE DATABASE `newsreadr` DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci;```
+2. Setup a new database by executing ```CREATE DATABASE `newsreadr` DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;```
 3. Create a new folder
 4. Copy **newsreadr-server.jar** and [**application.properties.tpl**](application.properties.tpl) into the folder
 5. Rename **application.properties.tpl** to **application.properties**, open it with a text editor and configure the database connection
