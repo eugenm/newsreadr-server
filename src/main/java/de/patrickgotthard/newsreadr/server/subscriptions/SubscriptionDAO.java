@@ -44,6 +44,7 @@ class SubscriptionDAO {
             .leftJoin(subscription.entries, entry).on(entry.read.isFalse())
             .where(user.id.eq(currentUserId))
             .groupBy(id)
+            .orderBy(title.asc())
             .fetch()
             .parallelStream()
             .map(tuple -> {
